@@ -6,20 +6,10 @@ export default function HomePage() {
   return (
     <>
       <Hero
-        title="AI 全栈后端与 AI 应用学习站 V6"
+        title="AI 全栈后端与 AI 应用学习站"
         desc="完整迁移增强版：保留系统图、后端体系、AI体系、项目落点、功能映射、链路、Demo、60天任务，并重做了 Ask AI 交互。"
       />
 
-      <Section title="这版修了什么">
-        <div className="callout good">
-          V5 静态版的内容这次完整迁移进 Next.js，不再只保留少量页面。Ask AI 也改成右侧学习助手，支持选词、手动输入、连续追问和快捷键。
-        </div>
-        <div className="grid three">
-          <div className="card"><h3>内容完整</h3><p>后端、AI 应用、功能映射、三条链路、Demo、任务表、术语库都保留。</p></div>
-          <div className="card"><h3>图示恢复</h3><p>恢复完整系统图和 RAG 知识库工程图，避免页面只有文字。</p></div>
-          <div className="card"><h3>交互增强</h3><p>选词后出现工具条，也可以按 Alt + A 打开右侧 AI 学习助手。</p></div>
-        </div>
-      </Section>
 
       <Section title="推荐学习顺序">
         <div className="tableWrap">

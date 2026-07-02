@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Hero, Section } from "@/components/Blocks";
 import {
   clearInterviewQuestions,
@@ -14,6 +14,55 @@ import {
   type InterviewQuestion
 } from "@/lib/interviewDb";
 import { presetQuestions } from "@/data/interviewPresets";
+
+async function exportToPdf(questions: InterviewQuestion[], title: string = "面试题库") {
+  const { jsPDF } = await import("jspdf");
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text(title, 14, 20);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Export Date: ${new Date().toLocaleDateString("zh-CN")} | Total: ${questions.length}`, 14, 28);
+
+  let y = 38;
+  const lineHeight = 7;
+  const pageHeight = 280;
+
+  questions.forEach((q, index) => {
+    if (y > pageHeight - 40) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(37, 99, 235);
+    const questionText = `${index + 1}. ${q.question}`;
+    const questionLines = doc.splitTextToSize(questionText, 180);
+    doc.text(questionLines, 14, y);
+    y += questionLines.length * lineHeight;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`[${q.category}] [${q.difficulty}]`, 14, y);
+    y += lineHeight;
+
+    doc.setTextColor(23, 32, 51);
+    const answerLines = doc.splitTextToSize(q.answer, 175);
+    doc.text(answerLines, 14, y);
+    y += answerLines.length * lineHeight + 4;
+
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, y, 196, y);
+    y += 6;
+  });
+
+  doc.save(`${title.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
 
 const categories: Array<InterviewCategory | "全部"> = [
   "全部",
@@ -195,6 +244,7 @@ export default function InterviewPage() {
             {loading ? "Agnes 正在生成..." : "AI 生成并保存到 IndexedDB"}
           </button>
           <button className="secondary" onClick={() => exportQuestionsAsJson(items)}>导出 JSON</button>
+          <button className="secondary" onClick={() => exportToPdf(filtered, "面试题库")}>导出 PDF</button>
           <button className="ghost" onClick={handleClear}>清空题库</button>
 
           {message && <div className="demoOutput">{message}</div>}
