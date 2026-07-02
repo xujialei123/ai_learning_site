@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="520" viewBox="0 0 1300 520">
+<rect width="1300" height="520" fill="#f8fafc"/>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748b"/></marker></defs>
+<style>.t{font-family:Arial,'Microsoft YaHei';fill:#0f172a}.s{font-family:Arial,'Microsoft YaHei';fill:#475569;font-size:14px}.l{stroke:#64748b;stroke-width:2;marker-end:url(#a)}</style>
+<text x="50" y="55" class="t" font-size="32" font-weight="700">RAG 知识库工程链路</text>
+<g>
+<rect x="50" y="120" width="150" height="70" rx="16" fill="#dbeafe"/><text x="85" y="150" class="t" font-size="20" font-weight="700">文档上传</text><text x="78" y="175" class="s">PDF/docx/txt</text>
+<rect x="250" y="120" width="150" height="70" rx="16" fill="#e0f2fe"/><text x="285" y="150" class="t" font-size="20" font-weight="700">文本解析</text><text x="280" y="175" class="s">清洗/去噪</text>
+<rect x="450" y="120" width="150" height="70" rx="16" fill="#dcfce7"/><text x="490" y="150" class="t" font-size="20" font-weight="700">Chunk</text><text x="475" y="175" class="s">切片/重叠</text>
+<rect x="650" y="120" width="150" height="70" rx="16" fill="#fef3c7"/><text x="690" y="150" class="t" font-size="20" font-weight="700">Embedding</text><text x="685" y="175" class="s">文本转向量</text>
+<rect x="850" y="120" width="150" height="70" rx="16" fill="#fce7f3"/><text x="890" y="150" class="t" font-size="20" font-weight="700">向量存储</text><text x="880" y="175" class="s">pgvector/Qdrant</text>
+<rect x="1050" y="120" width="150" height="70" rx="16" fill="#ede9fe"/><text x="1090" y="150" class="t" font-size="20" font-weight="700">元数据</text><text x="1080" y="175" class="s">merchant/doc/status</text>
+<rect x="250" y="310" width="150" height="70" rx="16" fill="#ccfbf1"/><text x="285" y="340" class="t" font-size="20" font-weight="700">用户问题</text><text x="280" y="365" class="s">改写/分类</text>
+<rect x="450" y="310" width="150" height="70" rx="16" fill="#d9f99d"/><text x="490" y="340" class="t" font-size="20" font-weight="700">检索TopK</text><text x="475" y="365" class="s">向量+关键词</text>
+<rect x="650" y="310" width="150" height="70" rx="16" fill="#bae6fd"/><text x="700" y="340" class="t" font-size="20" font-weight="700">Rerank</text><text x="685" y="365" class="s">重排序</text>
+<rect x="850" y="310" width="150" height="70" rx="16" fill="#fecdd3"/><text x="890" y="340" class="t" font-size="20" font-weight="700">Prompt</text><text x="880" y="365" class="s">资料+规则</text>
+<rect x="1050" y="310" width="150" height="70" rx="16" fill="#ddd6fe"/><text x="1090" y="340" class="t" font-size="20" font-weight="700">回答评估</text><text x="1080" y="365" class="s">引用/拒答/日志</text>
+</g>
+<line x1="200" y1="155" x2="250" y2="155" class="l"/><line x1="400" y1="155" x2="450" y2="155" class="l"/><line x1="600" y1="155" x2="650" y2="155" class="l"/><line x1="800" y1="155" x2="850" y2="155" class="l"/><line x1="1000" y1="155" x2="1050" y2="155" class="l"/>
+<line x1="925" y1="190" x2="525" y2="310" class="l"/><line x1="400" y1="345" x2="450" y2="345" class="l"/><line x1="600" y1="345" x2="650" y2="345" class="l"/><line x1="800" y1="345" x2="850" y2="345" class="l"/><line x1="1000" y1="345" x2="1050" y2="345" class="l"/>
+</svg>
