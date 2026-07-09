@@ -161,7 +161,7 @@ export const frontendGroups: KnowledgeGroup[] = [
       { name: "Prettier", desc: "代码格式化工具。", projectUse: "统一代码风格。", mistake: "和 ESLint 功能有重叠，需要配置协调。", understanding: "1) 配置：.prettierrc、printWidth、tabWidth、semi；2) 忽略：.prettierignore；3) 与 ESLint 集成：eslint-config-prettier、eslint-plugin-prettier；4) 保存时格式化：VS Code settings；5) 命令行：prettier --write；6) 必要性：团队协作必装。", difficulty: "与 ESLint 规则冲突需要仔细配置，忽略文件列表需要维护" },
       { name: "Git 工作流", desc: "版本控制和协作。", projectUse: "代码管理、分支策略、PR 流程。", mistake: "不要直接在 main 分支开发。", understanding: "1) 分支策略：main(生产)、develop(开发)、feature/*、hotfix/*；2) 提交规范：feat/fix/chore/docs/refactor；3) 合并方式：merge(保留历史)、squash(压缩提交)、rebase(线性历史)；4) 冲突解决：手动合并、理解冲突标记；5) .gitignore：node_modules、.env、dist；6) Git Hooks：husky、lint-staged。", difficulty: "复杂合并冲突解决、rebase 操作风险、monorepo 部分提交需要熟练掌握" },
       { name: "测试", desc: "保证代码质量的防线。", projectUse: "单元测试、集成测试、E2E 测试。", mistake: "测试不是越多越好，要覆盖核心逻辑。", understanding: "1) 测试金字塔：单元测试(多)→集成测试(中)→E2E 测试(少)；2) 单元测试：Jest、Vitest、测试纯函数；3) 组件测试：React Testing Library、测试用户交互；4) E2E 测试：Playwright、Cypress、测试完整流程；5) 测试原则：AAA(Arrange-Act-Assert)、FIRST(快速/独立/可重复/自验证)；6) 覆盖率：不是目标，是参考。", difficulty: "Mock/Stub 设计、异步测试处理、E2E 测试稳定性维护成本高" },
-      { name: "性能监控", desc: "线上性能追踪和优化。", projectUse: "加载速度、交互响应、错误追踪。", mistake: "本地快不等于线上快。", understanding: "1) Core Web Vitals：LCP(加载)、FID(交互)、CLS(稳定性)；2) 监控工具：Lighthouse、Web Vitals 库、Sentry；3) 性能指标：FCP、TTFB、TTI、TBT；4) 分析方法：Chrome Performance 面板、火焰图；5) 优化方向：首屏、懒加载、缓存、CDN；6) 用户体验：真实用户监控(RUM)。", difficulty: "性能指标解读、真实用户数据与实验室数据差异分析、优化效果量化" }
+      { name: "性能监控", desc: "线上性能追踪和优化。", projectUse: "加载速度、交互响应、错误追踪。", mistake: "本地快不等于线上快。", understanding: "1) Core Web Vitals(2024 年更新后)：LCP(加载)、INP(交互响应，2024 年 3 月正式取代 FID)、CLS(稳定性)；2) 监控工具：Lighthouse、Web Vitals 库、Sentry；3) 性能指标：FCP、TTFB、TTI、TBT；4) 分析方法：Chrome Performance 面板、火焰图；5) 优化方向：首屏、懒加载、缓存、CDN；6) 用户体验：真实用户监控(RUM)。", difficulty: "性能指标解读、真实用户数据与实验室数据差异分析、优化效果量化" }
     ]
   },
   {
@@ -180,17 +180,32 @@ export const frontendGroups: KnowledgeGroup[] = [
 
 export const aiGroups: KnowledgeGroup[] = [
   {
+    title: "AI 基础概念",
+    intro: "从零开始理解 AI，不需要数学背景也能懂。",
+    items: [
+      { name: "什么是 AI", desc: "人工智能的基本定义和分类。", projectUse: "理解整个 AI 应用的技术背景。", mistake: "AI 不是万能的，它只是工具。", understanding: "1) AI 定义：让机器模拟人类智能的技术；2) 分类：弱 AI(专用，如客服机器人)、强 AI(通用，目前不存在)；3) 子领域：机器学习、深度学习、自然语言处理(NLP)、计算机视觉(CV)；4) 与传统编程区别：传统=规则+数据→结果，AI=数据+结果→规则；5) 现状：大语言模型(LLM)是当前最热门的 AI 技术。" },
+      { name: "什么是大语言模型", desc: "ChatGPT/GPT-4 背后的技术原理。", projectUse: "理解我们项目中使用的 AI 技术。", mistake: "LLM 不是数据库，它不能直接查询你的数据。", understanding: "1) 本质：一个超大的文字接龙模型，根据上文预测下文；2) 训练：用海量文本训练，学习语言模式和知识；3) 参数：GPT-4 有万亿级参数，参数越多能力越强但成本越高；4) 能力：理解语言、生成文本、推理、翻译、总结；5) 局限：不知道你的私有数据、可能编造内容(幻觉)、有知识截止日期。" },
+      { name: "什么是 Token", desc: "AI 处理文本的最小单位。", projectUse: "计算成本、控制长度。", mistake: "1 个汉字不等于 1 个 Token，通常 1 汉字 = 1-2 Token。", understanding: "1) 定义：文本被切分成的最小单位，类似词语；2) 英文：一个单词通常 1 个 Token；3) 中文：一个汉字 1-2 个 Token；4) 作用：模型按 Token 处理文本，上下文长度按 Token 计算；5) 成本：按 Token 计费，输入+输出都算；6) 估算：1000 Token 约等于 750 英文单词 约等于 500 中文字。" },
+      { name: "什么是 Embedding", desc: "把文本变成数字向量的技术。", projectUse: "语义搜索、知识库检索。", mistake: "Embedding 不是用来生成回答的，是用来搜索的。", understanding: "1) 目的：让计算机理解文本的意思；2) 原理：把文本转换成一串数字(如 1536 个数字)；3) 特点：语义相近的文本，数字串也相近；4) 用途：搜索(找相似内容)、分类(判断相似度)、推荐；5) 与向量数据库配合：存储 Embedding，快速搜索相似内容；6) 模型选择：OpenAI、BGE、M3E 等。" },
+      { name: "什么是 RAG", desc: "让 AI 基于你的资料回答的技术。", projectUse: "本项目的核心架构。", mistake: "RAG 不是训练模型，而是给模型查资料。", understanding: "1) 全称：Retrieval Augmented Generation(检索增强生成)；2) 问题：LLM 不知道你的私有数据；3) 解决：先检索相关资料，再让 LLM 基于资料回答；4) 流程：用户问题→检索知识库→找到相关片段→喂给 LLM→生成回答；5) 优势：不需要训练模型、数据实时更新、可追溯来源；6) 应用：客服、问答、文档助手。" },
+      { name: "什么是 Prompt", desc: "给 AI 的指令和输入。", projectUse: "控制 AI 的行为和输出。", mistake: "Prompt 不是随便写的，它需要精心设计。", understanding: "1) 定义：你给 AI 的输入，包括问题、指令、上下文；2) 重要性：同样的问题，不同的 Prompt 效果可能差很远；3) 组成：角色(你是...)、目标(请...)、约束(必须/不能)、资料(参考...)；4) 技巧：具体清晰、给出示例、分步骤、限定输出格式；5) 优化：反复测试、对比效果、记录最佳实践。" },
+      { name: "什么是 Agent", desc: "让 AI 自主执行任务的技术。", projectUse: "AI 客服调用工具查订单、创建工单。", mistake: "Agent 不是完全自动化的，需要人工监督。", understanding: "1) 定义：能自主决策、调用工具、完成任务的 AI 系统；2) 与聊天区别：聊天=问答，Agent=执行任务；3) 核心能力：理解任务→选择工具→调用执行→返回结果；4) 工具调用：查数据库、调 API、发消息等；5) 安全问题：需要权限控制、人工审批、日志审计；6) 应用：智能客服、自动化助手、代码生成。" },
+      { name: "AI 应用全景图", desc: "常见的 AI 应用类型和场景。", projectUse: "了解 AI 在不同领域的应用。", mistake: "不是所有问题都适合用 AI 解决。", understanding: "1) 对话类：客服、聊天机器人、语音助手；2) 内容类：写作、翻译、摘要、图片生成；3) 搜索类：语义搜索、推荐系统、知识问答；4) 分析类：情感分析、分类、数据提取；5) 自动化类：代码生成、文档处理、流程自动化；6) 选型原则：明确目标→评估可行性→选择技术方案→小范围验证。" },
+      { name: "AI 开发工具箱", desc: "初学者需要知道的工具和平台。", projectUse: "快速上手 AI 开发。", mistake: "工具太多不要贪，先掌握核心的几个。", understanding: "1) 模型平台：OpenAI API、Anthropic API、Google Gemini、国产模型(DeepSeek、通义、Kimi)；2) 向量数据库：pgvector(推荐新手)、Pinecone(托管)；3) 开发框架：Vercel AI SDK(推荐新手)、LangChain/LangGraph(Agent 编排)、LlamaIndex(RAG 专用)；4) 前端工具：react-markdown、shadcn/ui；5) 监控工具：LangSmith、Langfuse；6) 学习资源：OpenAI Cookbook、Anthropic 文档、Vercel AI SDK 文档。" }
+    ]
+  },
+  {
     title: "模型调用与 Prompt",
     intro: "解决如何稳定调用模型、控制输入输出、成本和失败。",
     items: [
-      { name: "LLM 基础", desc: "理解模型能力、上下文、输入输出和局限。", projectUse: "客服回复、总结、分类、改写。", mistake: "模型不是数据库，不知道你的私有文档。", understanding: "1) 模型能力：文本生成、分类、翻译、总结、推理；2) 上下文窗口：模型一次能处理的最大 Token 数(4K-200K)；3) 输入输出：输入是 Prompt，输出是生成的文本；4) 局限：不知道你的私有数据、可能产生幻觉、有知识截止日期；5) 温度(temperature)：0=确定性高，1=创造性高；6) 选型：简单任务用小模型(便宜)、复杂任务用大模型(贵)；7) API 调用：REST 请求，返回 JSON。" },
-      { name: "Token 与上下文", desc: "Token 影响成本、速度、上下文容量。", projectUse: "控制 RAG 片段数量、限制聊天历史。", mistake: "上下文不能无限塞。", understanding: "1) Token 是什么：文本的最小单位，英文≈单词，中文≈1-2字；2) 计数：1 token ≈ 0.75 英文单词 ≈ 0.5 中文字；3) 成本：按输入+输出 Token 计费(如 GPT-4 $30/1M tokens)；4) 上下文窗口：输入+输出总 Token 不能超过模型限制；5) 塞太多：成本高、速度慢、可能丢失前面信息；6) 优化：限制聊天历史条数、压缩 RAG 片段、截断长文本；7) 监控：记录每次调用的 Token 用量。" },
+      { name: "LLM 基础进阶", desc: "深入理解模型能力、上下文、输入输出和局限。", projectUse: "客服回复、总结、分类、改写。", mistake: "模型不是数据库，不知道你的私有文档。", understanding: "1) 模型能力：文本生成、分类、翻译、总结、推理；2) 上下文窗口：模型一次能处理的最大 Token 数(主流模型 128K-1M)；3) 输入输出：输入是 Prompt，输出是生成的文本；4) 局限：不知道你的私有数据、可能产生幻觉、有知识截止日期；5) 温度(temperature)：0=确定性高，1=创造性高；6) 选型：简单任务用小模型(便宜)、复杂任务用大模型(贵)；7) API 调用：REST 请求，返回 JSON。" },
+      { name: "Token 与上下文", desc: "Token 影响成本、速度、上下文容量。", projectUse: "控制 RAG 片段数量、限制聊天历史。", mistake: "上下文不能无限塞。", understanding: "1) Token 是什么：文本的最小单位，英文≈单词，中文≈1-2字；2) 计数：1 token ≈ 0.75 英文单词 ≈ 0.5 中文字；3) 成本：按输入+输出 Token 计费，旗舰模型比轻量模型贵 10-30 倍(以官方最新价目表为准)；4) 上下文窗口：输入+输出总 Token 不能超过模型限制；5) 塞太多：成本高、速度慢、可能丢失前面信息；6) 优化：限制聊天历史条数、压缩 RAG 片段、截断长文本；7) 监控：记录每次调用的 Token 用量。" },
       { name: "Prompt 结构", desc: "角色、目标、约束、资料、输出格式、拒答规则。", projectUse: "客服 Prompt：只能基于知识库回答。", mistake: "Prompt 不是越长越好，而是越清楚越好。", understanding: "1) 角色：你是XX客服，语气友好专业；2) 目标：回答用户关于产品的问题；3) 约束：只能基于知识库回答，不知道就说不知道；4) 资料：[知识库内容]；5) 输出格式：JSON 包含 answer、sources、confidence；6) 拒答规则：低置信度转人工；7) 测试：用不同问题测试 Prompt 效果，迭代优化。" },
       { name: "System / Developer / User 消息", desc: "不同层级的指令边界。", projectUse: "系统规则、业务规则、用户问题分开。", mistake: "不要把所有规则都混在用户问题里。", understanding: "1) System：最高优先级，定义模型行为(如只能基于知识库回答)；2) Developer：业务规则(如输出 JSON 格式)；3) User：用户实际问题；4) 优先级：System > Developer > User；5) 分离好处：规则稳定不变，用户问题每次不同；6) 安全：System Prompt 防止用户注入攻击；7) 调试：单独测试 System Prompt 的效果。" },
       { name: "结构化输出", desc: "让模型按 schema 输出 JSON，便于后端处理。", projectUse: "answer、sources、confidence、need_handoff。", mistake: "不要靠正则硬解析自然语言。", understanding: "1) 为什么需要：JSON 比自然语言更容易解析、校验；2) 定义 Schema：answer(string)、sources(array)、confidence(number)、need_handoff(boolean)；3) 实现：OpenAI function calling 或 JSON mode；4) 校验：用 Zod/Joi 校验输出是否符合 schema；5) 降级：模型输出格式错误时重试或默认值；6) 示例：在 Prompt 中给出输出示例；7) 好处：前端直接使用，不需要额外解析。" },
       { name: "流式输出", desc: "边生成边返回，提高聊天体验。", projectUse: "SSE 打字机回复。", mistake: "流式也要保存完整消息。", understanding: "1) 为什么需要：用户不想等 5 秒看完整回复，边生成边看更流畅；2) SSE 实现：text/event-stream，每个 Token 发一个 event；3) 前端：EventSource 接收，拼接显示；4) 完整性：流式结束后保存完整消息到数据库；5) 错误处理：流式中断要能恢复或提示；6) 中断：用户可以取消流式生成；7) 注意：流式不能用结构化输出(JSON)，需要后处理。" },
-      { name: "模型路由", desc: "不同任务选择不同模型。", projectUse: "分类用便宜模型，复杂回答用强模型。", mistake: "不是所有任务都需要最强模型。", understanding: "1) 任务分类：简单(分类、提取)→小模型、复杂(推理、创作)→大模型；2) 成本控制：90% 用 GPT-3.5，10% 用 GPT-4；3) 路由规则：按任务类型、用户等级、负载情况；4) 实现：AIProvider 接口，内部根据路由选择模型；5) 监控：每个模型的调用量、成本、成功率；6) 降级：主模型不可用时切换备用模型；7) 测试：对比不同模型在同一任务上的效果。" },
-      { name: "降级与重试", desc: "模型失败时切换模型、重试或转人工。", projectUse: "AI 服务超时后提示稍后或人工接管。", mistake: "不要让 AI API 失败导致整个客服不可用。", understanding: "1) 失败类型：网络超时、限流、模型错误、内容过滤；2) 重试策略：立即重试(1次)→指数退避(2次)→切换模型；3) 降级路径：GPT-4 → GPT-3.5 → 缓存回复 → 转人工；4) 超时设置：流式 30 秒、非流式 60 秒；5) 熔断：连续失败 N 次后停止调用，避免雪崩；6) 用户提示：服务繁忙，请稍后重试；7) 监控：失败率 > 5% 要告警。" }
+      { name: "模型路由", desc: "不同任务选择不同模型。", projectUse: "分类用便宜模型，复杂回答用强模型。", mistake: "不是所有任务都需要最强模型。", understanding: "1) 任务分类：简单(分类、提取)→轻量模型(如 GPT-4o-mini、Claude Haiku、国产小模型)、复杂(推理、创作)→旗舰模型(如 GPT-5、Claude、Gemini)；2) 成本控制：90% 的请求走轻量模型，10% 走旗舰模型；3) 路由规则：按任务类型、用户等级、负载情况；4) 实现：AIProvider 接口，内部根据路由选择模型；5) 监控：每个模型的调用量、成本、成功率；6) 降级：主模型不可用时切换备用模型；7) 测试：对比不同模型在同一任务上的效果。" },
+      { name: "降级与重试", desc: "模型失败时切换模型、重试或转人工。", projectUse: "AI 服务超时后提示稍后或人工接管。", mistake: "不要让 AI API 失败导致整个客服不可用。", understanding: "1) 失败类型：网络超时、限流、模型错误、内容过滤；2) 重试策略：立即重试(1次)→指数退避(2次)→切换模型；3) 降级路径：旗舰模型 → 轻量模型 → 缓存回复 → 转人工；4) 超时设置：流式 30 秒、非流式 60 秒；5) 熔断：连续失败 N 次后停止调用，避免雪崩；6) 用户提示：服务繁忙，请稍后重试；7) 监控：失败率 > 5% 要告警。" }
     ]
   },
   {
@@ -215,6 +230,8 @@ export const aiGroups: KnowledgeGroup[] = [
     title: "Agent 与工具调用",
     intro: "解决 AI 如何安全地调用业务系统，而不是只聊天。",
     items: [
+      { name: "Agent Loop (ReAct)", desc: "AI 自主思考-行动-观察的循环机制，是 2024-2025 最火的 AI 工程模式。", projectUse: "智能客服自动解决问题、自动化工作流、代码生成。", mistake: "Agent Loop 不是无限循环，必须有边界控制。", understanding: "1) 核心循环：Thought(思考)→Action(行动)→Observation(观察)→循环直到完成；2) ReAct 框架：Reasoning(推理)+ Acting(行动)，让模型先想再做；3) 与传统区别：传统=预定义流程，Agent=模型自主决策；4) 循环示例：用户问退款→思考(需要查订单)→调用 getOrderStatus→观察(订单已发货)→思考(需要查询退款政策)→检索知识库→生成回答；5) 关键设计：1) 循环终止条件(完成/失败/超时)；2) 最大步数限制(防止无限循环)；3) 每步记录(Thought/Action/Observation 便于调试)；4) 错误处理(工具失败后重试或换方案)；5) 成本控制(每步都消耗 Token)；6) 应用场景：复杂问题分解、多步骤任务、需要推理的场景；7) 业界实现：LangChain Agent、OpenAI Assistants API、Anthropic Claude Tool Use；8) 与 Workflow 区别：Workflow=固定流程可预测，Agent Loop=动态决策灵活但不可预测。" },
+      { name: "Chain of Thought (CoT)", desc: "让模型展示推理过程，提升复杂任务准确率。", projectUse: "数学计算、逻辑推理、多步骤分析。", mistake: "CoT 会增加 Token 消耗，简单问题不需要。", understanding: "1) 核心思想：让模型一步步思考，而不是直接给答案；2) 实现方式：在 Prompt 中加'请一步步分析'；3) 效果：复杂问题准确率提升 20-40%；4) 变体：Zero-shot CoT(直接说'let's think step by step')、Few-shot CoT(给推理示例)；5) 成本：输出 Token 增加 2-5 倍；6) 适用：数学题、逻辑推理、代码调试；7) 不适用：简单问答、闲聊、分类任务；8) 与 Agent Loop 关系：CoT 是思考方式，Agent Loop 是执行框架。" },
       { name: "Tool Calling", desc: "模型选择调用哪个后端工具。", projectUse: "查订单、查库存、创建工单。", mistake: "模型只能建议调用，真正执行必须后端控制。", understanding: "1) 完整流程：用户问题→LLM 判断需要调用工具→返回工具名+参数(JSON)→后端校验权限→执行工具→结果返回 LLM→生成最终回答；2) 模型不执行：模型只输出'我想调用 XX 工具，参数是 XXX'，后端决定是否执行；3) 实现方式：OpenAI function calling、Anthropic tool_use、Google function calling；4) 并行调用：一次可以建议多个工具调用(如同时查订单和查库存)；5) 选择依据：模型根据工具描述和用户问题自动选择；6) 安全校验：后端必须校验参数合法性(防注入)、用户权限(防越权)、操作合理性(防滥用)；7) 超时控制：工具执行超时要能中断，避免阻塞；8) 日志记录：每次调用记录工具名、参数、结果、耗时、成功/失败。" },
       { name: "Tool Schema", desc: "定义工具参数、类型和返回。", projectUse: "getOrderStatus(orderId)。", mistake: "Schema 不清楚会导致参数混乱。", understanding: "1) 定义内容：工具名、描述、参数(JSON Schema)、返回格式；2) 示例：{ name: 'getOrderStatus', description: '查询指定订单的当前状态', parameters: { type: 'object', properties: { orderId: { type: 'string', description: '订单号，格式为 ORD-XXXXX' } }, required: ['orderId'] } }；3) 描述要清晰：模型靠描述判断何时使用，描述不清会导致误用；4) 参数类型：string、number、boolean、enum、array、object；5) 必填标记：required 字段标记哪些参数必须提供；6) 返回格式：定义返回结构，便于 LLM 理解(如 { status: string, updatedAt: string } )；7) 测试验证：用不同问题测试模型是否正确选择工具和传递参数；8) 版本管理：工具参数变更要考虑向后兼容。" },
       { name: "工具权限", desc: "AI 调用工具前后端必须校验权限。", projectUse: "客服不能执行退款。", mistake: "AI 不能绕过用户权限。", understanding: "1) 权限校验时机：工具执行前，后端统一校验，不依赖 LLM 判断；2) 工具分级：只读(查询订单)、写入(创建工单)、敏感(退款/删除)；3) 角色限制：客服只能查询，管理员才能退款/删除；4) 实现：工具执行器中间件统一校验 permissions.includes('order:refund')；5) 多租户隔离：只能操作本商家的数据(merchant_id 校验)；6) 审计日志：记录每次工具调用的用户、参数、结果、IP；7) 防注入：校验参数合法性，防止 SQL 注入、命令注入；8) 熔断机制：连续失败 N 次后暂停工具调用，避免雪崩。" },
@@ -236,13 +253,54 @@ export const aiGroups: KnowledgeGroup[] = [
       { name: "回答准确率", desc: "最终回答是否正确。", projectUse: "人工评分或规则评分。", mistake: "准确率要分场景统计。", understanding: "1) 定义：AI 最终回答是否正确回答了用户问题；2) 评估方式：人工评分(1-5分)、规则评分(关键词匹配)、LLM 评估；3) 分场景统计：简单问题准确率、复杂问题准确率、拒答准确率；4) 目标：整体准确率 > 80%，简单问题 > 95%；5) 错误分类：检索失败、生成错误、幻觉、拒答不当；6) 持续优化：分析错误案例，针对性优化 Prompt/检索；7) A/B 测试：新版本上线前对比准确率。" },
       { name: "拒答率", desc: "无答案时是否拒答。", projectUse: "防止胡说。", mistake: "拒答不是失败，是安全能力。", understanding: "1) 定义：知识库无答案时，AI 正确拒答而非编造；2) 计算：正确拒答数 / 应拒答数 × 100%；3) 目标：应拒答问题的拒答率 > 95%；4) 判断依据：检索相似度 < 阈值(如 0.6)、LLM 置信度低；5) 拒答话术：'抱歉，我暂时无法回答这个问题，已为您转接人工客服'；6) 评估：拒答率太低(幻觉风险)、太高(用户体验差)；7) 缺口分析：收集拒答问题，补充知识库。" },
       { name: "幻觉率", desc: "是否编造知识库没有的内容。", projectUse: "价格、退款政策尤其危险。", mistake: "客服场景幻觉成本很高。", understanding: "1) 定义：AI 回答中包含知识库没有的信息(编造价格、政策、功能)；2) 检测：人工审核、LLM 辅助判断、引用来源校验；3) 目标：幻觉率 < 5%，关键领域(价格/退款) = 0%；4) 高危场景：价格、退款政策、产品功能、法律条款；5) 预防：严格 Prompt 约束(只基于知识库)、引用来源、拒答策略；6) 监控：用户投诉、人工抽检、自动检测；7) 案例库：收集幻觉案例，训练时避免。" },
-      { name: "成本监控", desc: "记录 token、模型、调用次数。", projectUse: "控制 AI 接口费用。", mistake: "不记录 token 就不知道商业上能不能跑。", understanding: "1) 记录内容：每次调用的 input_tokens、output_tokens、模型、费用；2) 成本计算：GPT-4 $30/1M tokens、GPT-3.5 $0.5/1M tokens；3) 按维度统计：按用户、按商家、按功能、按模型；4) 告警：单日费用超过阈值、单用户费用异常；5) 优化方向：压缩上下文、用便宜模型、缓存常见问题；6) 成本预算：设定每月 AI 费用上限；7) 报表：日报/周报/月报，分析成本趋势。" },
+      { name: "成本监控", desc: "记录 token、模型、调用次数。", projectUse: "控制 AI 接口费用。", mistake: "不记录 token 就不知道商业上能不能跑。", understanding: "1) 记录内容：每次调用的 input_tokens、output_tokens、模型、费用；2) 成本计算：按各模型官方价目表算，旗舰模型和轻量模型单价可差 10-30 倍，价格更新快，写代码时读配置而非硬编码；3) 按维度统计：按用户、按商家、按功能、按模型；4) 告警：单日费用超过阈值、单用户费用异常；5) 优化方向：压缩上下文、用便宜模型、缓存常见问题；6) 成本预算：设定每月 AI 费用上限；7) 报表：日报/周报/月报，分析成本趋势。" },
       { name: "延迟监控", desc: "记录检索耗时、模型耗时、总耗时。", projectUse: "优化用户等待。", mistake: "用户不关心你技术多复杂，只关心慢不慢。", understanding: "1) 延迟分解：检索耗时(向量搜索)、Rerank 耗时、模型耗时(生成)、网络耗时；2) 目标：总延迟 < 3 秒(流式首 Token < 1 秒)；3) 记录：每次请求记录各阶段耗时；4) 监控：P50/P95/P99 延迟、按模型/按功能维度；5) 优化：缓存常见查询、异步预计算、模型路由(简单任务用快模型)；6) 告警：P95 延迟 > 5 秒；7) 用户体验：流式输出(边生成边显示)减少感知延迟。" },
       { name: "Prompt Injection 防护", desc: "防止用户诱导 AI 泄漏规则或越权。", projectUse: "恶意用户说忽略之前规则。", mistake: "Prompt 护栏不是百分百安全，还要后端权限。", understanding: "1) 攻击方式：用户在输入中嵌入指令(忽略规则、输出系统 Prompt、执行未授权操作)；2) 防护层次：输入过滤(检测危险关键词)、Prompt 约束(不能违反规则)、后端权限(即使 AI 被骗，后端也校验权限)；3) 输入过滤：检测 prompt injection 关键词(忽略规则、输出系统 Prompt)；4) Prompt 约束：在 System Prompt 中明确禁止行为；5) 后端权限：工具调用前校验用户权限，AI 无法绕过；6) 监控：记录可疑输入，人工审核；7) 测试：定期用攻击样本测试系统韧性。" },
       { name: "PII 脱敏", desc: "保护手机号、地址、姓名等敏感信息。", projectUse: "日志和模型输入脱敏。", mistake: "日志里不要明文堆敏感信息。", understanding: "1) PII 类型：手机号、身份证号、邮箱、地址、银行卡号；2) 脱敏规则：手机号 138****1234、邮箱 a***@example.com、身份证 110***********1234；3) 脱敏时机：日志记录前、发送给 AI 模型前、存储前；4) 实现：正则匹配 + 替换、NER 模型识别 + 替换；5) 日志脱敏：pino 日志中间件自动脱敏；6) AI 输入脱敏：发送给模型前脱敏，模型返回后还原；7) 合规要求：GDPR、CCPA、等保都要求 PII 保护；8) 审计：定期检查日志和数据库中的 PII 泄漏。" },
       { name: "Guardrails 护栏", desc: "规则、权限、过滤、拒答、人工兜底的组合。", projectUse: "不是单个 Prompt。", mistake: "不要以为一句系统提示就能解决安全。", understanding: "1) 多层防护：输入过滤→Prompt 约束→检索过滤→输出校验→后端权限→人工兜底；2) 输入层：检测 Prompt Injection、PII 过滤、敏感词过滤；3) Prompt 层：系统规则(只基于知识库)、拒答规则、格式约束；4) 检索层：Metadata Filter(多租户)、相似度阈值；5) 输出层：引用来源校验、幻觉检测、格式校验；6) 后端层：工具权限校验、操作审批、限流；7) 兜底层：低置信度转人工、异常告警；8) 监控：各层拦截率、整体安全指标；9) 迭代：根据攻击样本持续优化护栏。" },
       { name: "反馈闭环", desc: "用户点踩、人工修正、未命中问题进入优化池。", projectUse: "持续提升知识库和 Prompt。", mistake: "没有反馈闭环，AI 质量很难持续提升。", understanding: "1) 反馈来源：用户点踩/点赞、人工客服修正、管理员审核、评估集失败案例；2) 反馈收集：前端反馈按钮、后台反馈入口、自动收集(低置信度)；3) 反馈分类：检索失败、生成错误、幻觉、拒答不当、其他；4) 处理流程：反馈→分类→分配→修复→验证→上线；5) 优化方向：补充知识库(检索失败)、优化 Prompt(生成错误)、调整阈值(拒答不当)；6) 效果追踪：修复前后对比准确率；7) 闭环验证：修复后重新评估，确认效果。" },
       { name: "版本管理", desc: "Prompt、模型、评估集、知识库都要有版本。", projectUse: "改 Prompt 后能回滚和对比。", mistake: "改了什么说不清，就没法复盘。", understanding: "1) Prompt 版本：每次修改记录版本号、修改内容、修改原因；2) 模型版本：记录模型版本(如 gpt-4-turbo-2024-04-09)；3) 评估集版本：每次评估记录评估集版本，结果可对比；4) 知识库版本：文档更新记录版本，支持回滚；5) 变更日志：每次变更记录 who/what/when/why；6) 回滚能力：Prompt/模型/知识库都能快速回滚到上一版本；7) 对比实验：A/B 测试新旧版本效果；8) 审计：版本历史不可删除，便于追溯。" }
+    ]
+  },
+  {
+    title: "AI 应用开发实战",
+    intro: "从 0 到 1 构建 AI 应用的完整流程。",
+    items: [
+      { name: "第一个 AI 应用", desc: "5 分钟创建一个 AI 聊天机器人。", projectUse: "快速上手 AI 开发。", mistake: "不要一开始就追求完美，先跑通再优化。", understanding: "1) 最简配置：一个 API Key + 一个前端页面；2) 代码示例：调用 OpenAI API 发送消息；3) 流式输出：用 SSE 实现打字机效果；4) 错误处理：网络错误、API 限流、Token 超限；5) 下一步：加知识库(RAG)、加工具(Agent)、加记忆(Memory)。" },
+      { name: "知识库应用开发", desc: "让 AI 基于你的文档回答问题。", projectUse: "客服、文档助手、内部知识库。", mistake: "文档质量决定回答质量，垃圾进垃圾出。", understanding: "1) 步骤：文档上传→解析→切片→Embedding→存储→检索→生成；2) 技术选型：pgvector(简单)、Pinecone(托管)；3) 切片策略：500 Token + 15% 重叠；4) 检索优化：Hybrid Search + Rerank；5) 评估：准备 100 条测试问题，计算命中率；6) 常见坑：文档格式乱、切片太大、检索不准。" },
+      { name: "Agent 应用开发", desc: "让 AI 自主调用工具完成任务。", projectUse: "智能客服、自动化助手。", mistake: "Agent 需要严格的权限控制，不能让它乱来。", understanding: "1) 步骤：定义工具→注册工具→模型选择→执行→返回；2) 工具定义：名称、描述、参数 Schema；3) 权限控制：后端校验，不依赖模型判断；4) 安全机制：白名单、限流、审批、日志；5) 监控：工具调用成功率、耗时、失败原因；6) 示例：查订单、创建工单、发送消息。" },
+      { name: "多模态应用", desc: "处理图片、音频、视频的 AI 应用。", projectUse: "图片识别、语音转文字、视频分析。", mistake: "多模态成本更高，要权衡必要性。", understanding: "1) 图片理解：主流旗舰模型(GPT-5/Claude/Gemini)均原生支持看图；2) 语音转文字：Whisper API；3) 文字转语音：TTS API；4) 图片生成：DALL-E、Midjourney；5) 应用场景：商品图片识别、语音客服、视频字幕；6) 注意：多模态 Token 成本更高，处理时间更长。" },
+      { name: "AI 应用部署", desc: "把 AI 应用部署到线上。", projectUse: "Vercel、Docker、云服务器。", mistake: "线上环境和本地环境可能不一样。", understanding: "1) 部署平台：Vercel(推荐 Next.js)、Railway、Render；2) 环境变量：API Key 不要硬编码；3) 限流：防止用户滥用；4) 监控：错误率、延迟、成本；5) 日志：记录所有 API 调用；6) 成本控制：设置预算告警。" },
+      { name: "AI 项目选型指南", desc: "如何选择合适的 AI 技术方案。", projectUse: "新项目技术选型。", mistake: "不要为了用 AI 而用 AI，有些问题传统方案更好。", understanding: "1) 问题分类：问答→RAG、执行任务→Agent、内容生成→直接调用；2) 模型选择：简单任务→轻量模型(GPT-4o-mini/Claude Haiku)、复杂任务→旗舰模型(GPT-5/Claude/Gemini)、中文场景→国产模型(DeepSeek/通义/Kimi)；3) 成本评估：Token 费用 × 调用量 = 月成本；4) 合规要求：数据安全、隐私保护；5) 团队能力：不要选团队hold不住的技术；6) MVP 优先：先做最小可用版本，验证效果后再优化。" }
+    ]
+  },
+  {
+    title: "AI 行业应用案例",
+    intro: "了解 AI 在各行各业的实际应用。",
+    items: [
+      { name: "智能客服", desc: "用 AI 替代或辅助人工客服。", projectUse: "本项目的核心场景。", mistake: "AI 客服不能完全替代人工，需要人机协作。", understanding: "1) 核心功能：FAQ 自动回复、工单创建、转人工；2) 技术栈：RAG + Agent + Webhook；3) 关键指标：解决率、转人工率、用户满意度；4) 常见问题：幻觉、检索不到、响应慢；5) 优化方向：知识库扩充、Prompt 优化、流程自动化。" },
+      { name: "内容生成", desc: "用 AI 生成文章、营销文案、产品描述。", projectUse: "营销、运营、内容创作。", mistake: "AI 生成的内容需要人工审核，不能直接发布。", understanding: "1) 应用：文章生成、广告文案、产品描述、邮件模板；2) 技术：直接调用 LLM + Prompt 模板；3) 质量控制：人工审核、品牌调性检查；4) 批量生成：队列 + 流式输出；5) 版本管理：保存生成历史，便于对比。" },
+      { name: "智能搜索", desc: "用 AI 提升搜索体验。", projectUse: "内部知识库、电商搜索。", mistake: "向量搜索不适合所有场景，要结合关键词搜索。", understanding: "1) 传统搜索：关键词匹配，找不到同义词；2) AI 搜索：语义理解，能找到意思相近的内容；3) 混合搜索：关键词 + 向量，效果最好；4) 应用：内部文档搜索、电商商品搜索、代码搜索；5) 优化：Query Rewrite、Rerank、个性化排序。" },
+      { name: "代码助手", desc: "用 AI 辅助编程、代码审查、文档生成。", projectUse: "开发效率提升。", mistake: "AI 生成的代码需要仔细审查，可能有安全漏洞。", understanding: "1) 工具：Cursor、Claude Code、GitHub Copilot、Windsurf；2) 功能：代码补全、Bug 修复、代码解释、单元测试；3) 使用技巧：写好注释、提供上下文、分步骤提问；4) 注意：代码审查、安全检查、性能测试；5) 局限：复杂逻辑、架构设计、业务理解。" },
+      { name: "数据分析", desc: "用 AI 分析数据、生成报表、发现趋势。", projectUse: "运营分析、用户画像、异常检测。", mistake: "AI 分析结果需要业务验证，不能盲目相信。", understanding: "1) 应用：数据清洗、趋势分析、异常检测、预测；2) 技术：自然语言查询(NL2SQL)、自动报表；3) 工具：ChatGPT Code Interpreter、专业 BI 工具；4) 价值：降低数据分析门槛、快速洞察；5) 风险：数据安全、结果准确性、隐私保护。" },
+      { name: "AI 教育", desc: "用 AI 个性化学习、自动出题、智能辅导。", projectUse: "本项目就是 AI 教育应用。", mistake: "AI 辅导不能替代老师，要人机结合。", understanding: "1) 应用：个性化学习路径、自动出题、作业批改、答疑；2) 技术：RAG(知识问答)、Prompt(教学引导)、评估(学习效果)；3) 优势：24/7 可用、个性化、耐心；4) 局限：不能理解学生情感、可能给出错误答案；5) 本项目：全栈+AI 知识体系学习。" }
+    ]
+  },
+  {
+    title: "AI 前沿 (2026)",
+    intro: "2026 年 AI 行业最新范式：Agent RL、记忆系统、世界模型、模型专业化，紧跟 arXiv 和产业一线。",
+    items: [
+      { name: "Agentic RL (Agent 强化学习)", desc: "用强化学习专门训练 AI Agent 的决策能力，2026 年 Agent 训练的主流方法。", projectUse: "训练客服 Agent 在多轮对话中自主选择最优工具和策略。", mistake: "Agentic RL 不是普通 RLHF，它训练的是多步决策而非单次回答。", understanding: "1) 核心思想：让 Agent 在模拟环境中反复试错，学习长期最优策略(而非单步正确)；2) 与 RLHF 区别：RLHF 训练单次回答质量，Agentic RL 训练多步交互的累积奖励；3) Token-In Token-Out：Agent 输入文本+工具调用，输出文本+动作，整个过程端到端训练；4) 训练流程：构建模拟环境→Agent 交互→收集轨迹→计算奖励→策略优化→循环；5) 框架：OpenAI、Anthropic、DeepSeek 都在用 Agentic RL 训练 Agent；6) 难点：奖励稀疏(多步后才知道对不对)、探索空间大(工具组合爆炸)、模拟环境搭建；7) 效果：Agentic RL 训练的 Agent 在企业级任务上比纯 SFT 提升 30-50%；8) 适用场景：复杂工作流、多工具协作、需要长期规划的任务。" },
+      { name: "Agent 记忆系统 (Fact-Graph Memory)", desc: "让 Agent 拥有结构化长期记忆，能记住事实、关系和历史决策。", projectUse: "客服 Agent 记住用户历史问题、偏好、之前提到的订单号。", mistake: "把所有对话历史塞进上下文不是记忆系统，会爆 Token 且检索低效。", understanding: "1) 核心问题：Agent 需要长期记忆(跨会话)，但上下文窗口有限且成本高；2) 三种记忆：工作记忆(当前对话上下文)、情景记忆(历史对话摘要)、语义记忆(提取的事实和关系)；3) Fact-Graph Memory：把提取的事实存入知识图谱(实体+关系)，查询时图遍历+向量检索；4) 代表研究：Danus(数学推理 Agent 用 Fact-Graph Memory)、StateFuse(多 Agent 共享状态记忆)；5) 实现方式：对话→LLM 提取事实→存入图数据库/向量库→Agent 需要时检索；6) 关键设计：事实去重、冲突解决(同一用户两次说不同地址)、遗忘机制(过时信息清理)；7) 隐私：用户可查看/删除自己的记忆(GDPR)；8) 与 RAG 区别：RAG 检索知识库文档，Agent Memory 检索历史交互事实。" },
+      { name: "World Models (世界模型)", desc: "让 AI 理解物理世界的因果关系，进行预测和规划，2026 年 AI 研究热点。", projectUse: "Agent 模拟操作后果再执行，避免真实系统中的错误操作。", mistake: "World Model 不是搜索引擎，它是理解因果关系的内部模拟器。", understanding: "1) 核心思想：Agent 内部构建一个'世界模型'，在行动前先在脑中模拟后果；2) 与 LLM 区别：LLM 是语言接龙(相关性)，World Model 是因果推理(如果做A会发生B)；3) 应用：自动驾驶(预测其他车的行为)、机器人(预测抓取结果)、游戏AI(预测对手策略)；4) 代表研究：2026 年 7 月 arXiv 发布《A Definition and Roadmap for World Models》系统梳理；5) 训练方式：从视频/模拟环境中学习物理规律和因果关系；6) 与 Agent 结合：Agent 用 World Model 做 planning(先模拟再行动)；7) 局限：计算开销大、需要大量环境数据、当前主要在游戏和自动驾驶领域；8) 趋势：2026 年 World Model 从学术走向产品(游戏AI、机器人控制)。" },
+      { name: "模型专业化 (Specialization)", desc: "从通用大模型走向垂直领域专家模型，2026 年'专业化不可避免'成为共识。", projectUse: "医疗、法律、代码、科学等领域需要专业模型而非通用模型。", mistake: "专业化不等于小模型，而是用专业数据和 RL 让模型在特定领域超越通用模型。", understanding: "1) 趋势：通用模型(GPT-4/Claude)在所有领域都'还行'，但专业领域需要'极致'；2) 专业化路径：领域数据预训练→领域 SFT→领域 RLHF/Agentic RL；3) 代表：Claude Science(科研)、Claude Code(编程)、代码专用模型(DeepSeek-Coder)、数学专用模型；4) 2026 论文《Why Specialization Is Inevitable》：通用模型有天花板，专业模型用更少参数达到更好效果；5) 优势：效果更好、推理更快(模型更小)、成本更低(Token 更少)；6) 挑战：领域数据获取难、评估标准不统一、模型碎片化管理；7) 与微调区别：微调是通用模型适配，专业化是专门为某领域设计架构和训练流程；8) 选型：通用任务→通用模型、高频专业任务→专业模型、低频任务→通用模型+RAG。" },
+      { name: "Agent 安全护栏 (Intent-Driven Guardrails)", desc: "基于意图推理的安全系统，能理解用户真实意图而非只匹配关键词。", projectUse: "识别用户是想正常查询还是试图绕过 AI 限制。", mistake: "关键词过滤已经不够了，2026 年的攻击用正常词汇绕过。", understanding: "1) 传统防护：关键词黑名单(容易绕过)、正则匹配(规则脆弱)；2) Intent-Driven Guardrails：用 LLM 分析用户意图，判断是否有害(即使字面无害)；3) 代表研究：DT-Guard(意图驱动推理训练的安全护栏)、Anthropic 的 jailbreak 严重性评分框架；4) 工作流程：用户输入→意图分析(是正常查询还是攻击？)→分级处理(放行/警告/拦截/转人工)；5) 多层防护：输入意图分析→Prompt 约束→输出校验→后端权限→审计日志；6) 与传统 WAF 区别：WAF 防网络攻击，Guardrails 防 AI 语义攻击；7) 行业协作：Anthropic 联合 Amazon/Google/Microsoft 建立 jailbreak 评分标准(Glasswing)；8) 关键能力：区分'好奇测试'和'恶意攻击'，不过度拦截正常用户。" },
+      { name: "端侧 AI (On-Device AI)", desc: "在手机、PC、IoT 设备上直接运行 AI 模型，数据不出本地。", projectUse: "手机端 AI 助手、本地代码补全、隐私敏感场景。", mistake: "端侧 AI 不是把大模型塞进手机，而是用量化+蒸馏的小模型。", understanding: "1) 为什么需要：隐私(数据不出设备)、低延迟(不需要网络)、离线可用、成本低(不调 API)；2) 技术栈：量化(GPTQ/AWQ/GGUF)、蒸馏(大模型→小模型)、剪枝(去掉冗余参数)、推理引擎(llama.cpp/vLLM)；3) 代表：Apple Intelligence(端侧推理)、BaseRT(Apple Silicon 原生 Metal 加速)、Ollama(本地部署)；4) 模型规模：端侧通常 1B-7B 参数(手机)、7B-13B(PC)、70B+(服务器)；5) 硬件加速：NPU(手机神经处理单元)、GPU(CUDA/Metal)、专用 AI 芯片；6) 效果：7B 模型在手机上可达到 GPT-3.5 水平，适合简单任务；7) 局限：复杂推理仍需云端、多模态能力有限、模型更新需要 OTA；8) 趋势：2026 年'端云协同'成为主流(简单任务端侧，复杂任务云端)。" },
+      { name: "实时语音 AI (Real-Time Voice AI)", desc: "AI 直接理解和生成语音，实现自然对话，延迟低于 500ms。", projectUse: "语音客服、语音助手、实时翻译。", mistake: "语音 AI 不是 ASR→LLM→TTS 三段拼接，而是端到端理解。", understanding: "1) 传统方式：语音→文字(ASR)→LLM 处理→文字→语音(TTS)，延迟 2-5 秒；2) 2026 方式：端到端语音模型直接理解语音并生成语音，延迟 < 500ms；3) 代表：GPT-4o 原生语音、Gemini Live、Hugging Face + Cerebras 实时语音(Gemma 4)；4) 能力：理解语气/情感/停顿、被打断后自然恢复、多语言实时切换；5) 技术：多模态模型(音频+文本联合训练)、流式生成(边听边说)、KV Cache 优化(低延迟)；6) 应用：语音客服(替代传统 IVR)、实时翻译、无障碍辅助、游戏 NPC；7) 挑战：背景噪声处理、多人同时说话、情感识别准确性；8) 与传统语音助手区别：Siri/Alexa 是命令式，2026 语音 AI 是对话式(能闲聊、能追问、能表达情感)。" },
+      { name: "KV Cache 压缩", desc: "优化长上下文推理的显存和速度，2026 年长上下文部署的关键技术。", projectUse: "在有限 GPU 上运行 100K+ 上下文的模型服务。", mistake: "KV Cache 压缩不是裁剪 Prompt，而是在推理层优化显存占用。", understanding: "1) 核心问题：LLM 推理时每个 Token 的 Key-Value 都要存(KV Cache)，长上下文→显存爆炸；2) 压缩方法：DepthWeave-KV(跨层残差分解)、FreqDepthKV(频率引导深度共享)、稀疏注意力(只保留重要位置)；3) 效果：显存占用降低 50-80%，推理速度提升 2-3 倍，质量损失 < 2%；4) 与 Prompt Caching 区别：Prompt Caching 复用计算结果，KV Cache 压缩减少存储大小；5) 代表研究：2026 年 7 月多篇 arXiv 论文聚焦 KV Cache 优化；6) 实现：在推理引擎(vLLM/TGI)层面实现，应用层无感知；7) 适用场景：长上下文部署、多用户并发、边缘设备推理；8) 趋势：KV Cache 压缩 + 量化 + 稀疏注意力 = 2026 年长上下文部署三件套。" },
+      { name: "AI 科学发现 (AI for Science)", desc: "AI 深度参与科学研究：假设生成、实验设计、数据分析、论文写作。", projectUse: "科研团队用 AI 加速文献综述、实验设计、数据分析。", mistake: "AI for Science 不是让 AI 替代科学家，而是加速科研流程。", understanding: "1) 代表产品：Claude Science(Anthropic，科研 AI 工作台)、AlphaFold(蛋白质结构)、GNoME(材料发现)；2) 能力：文献检索与综述、假设生成与验证、实验设计优化、数据分析可视化、论文草稿生成；3) Claude Science 特色：集成科研工具包(Jupyter/R/Python)、可审计产物(每次推理可追溯)、灵活计算资源；4) 应用领域：药物发现(加速分子筛选)、材料科学(预测新材料属性)、气候模型(模拟气候变化)；5) 关键要求：可审计性(每步推理有依据)、可复现性(代码+数据+环境)、领域专家监督；6) 局限：不能替代同行评审、不能独立做重大发现、需要领域知识指导；7) 趋势：2026 年'AI Scientist'从概念走向实验室日常工具；8) 伦理：AI 生成的科研成果需要明确标注，数据使用需要合规。" },
+      { name: "多 Agent 编排 (Multi-Agent Orchestration)", desc: "多个 Agent 在生产环境中协作，有状态同步、冲突解决、故障恢复。", projectUse: "客服 Agent + 工单 Agent + 审核 Agent 协作处理复杂投诉。", mistake: "2026 年的 Multi-Agent 不是'多个 LLM 聊天'，而是有状态管理的生产系统。", understanding: "1) 2026 进化：从 Demo 级(多个 Agent 对话)→生产级(状态同步+冲突解决+故障恢复)；2) 状态管理：StateFuse(确定性冲突保留记忆)——多 Agent 共享状态时保留各自视角；3) 编排模式：Orchestrator(中心调度)、Event-Driven(事件驱动)、Hierarchical(层级分派)；4) 挑战与解决：通信延迟→异步消息队列、错误传播→隔离+重试、调试困难→分布式追踪；5) 代表框架：LangGraph(状态图)、CrewAI(角色扮演)、AutoGen(微软)；6) 与 Workflow 区别：Workflow=固定流程可预测，Multi-Agent=动态协作灵活但需约束；7) 生产级要求：熔断降级(一个 Agent 挂了不影响整体)、审计日志(每步决策可追溯)、成本控制(每个 Agent 的 Token 消耗)；8) 适用场景：企业级自动化、跨系统协作、需要多步推理的复杂任务。" },
+      { name: "AI Coding Agent (成熟期)", desc: "2026 年 AI 编程从'辅助补全'进化为'自主完成任务'，成为开发者日常工具。", projectUse: "用 Claude Code/Cursor 自主定位 Bug、修改代码、运行测试、提交 PR。", mistake: "AI Coding Agent 不是替代程序员，而是把程序员从重复劳动中解放。", understanding: "1) 2026 现状：Claude Code 已从内部 CLI 成为 Anthropic 主力产品，Cursor 成为开发者标配；2) 能力进化：2024=代码补全→2025=单文件修改→2026=跨文件重构+测试+部署；3) 工作流程：理解代码库→定位问题→制定方案→修改代码→运行测试→验证→提交；4) 安全沙箱：在隔离环境执行代码(Docker/gVisor)，防止破坏宿主系统；5) 代表产品：Claude Code(CLI Agent)、Cursor(AI IDE)、GitHub Copilot Workspace、Windsurf；6) 效率：简单任务 10x、中等任务 3-5x、复杂架构仍需人工；7) 局限：大型代码库全局理解有限、架构决策仍需人工、安全敏感代码需审查；8) 趋势：2026 年'AI 协作编程'成为默认开发模式，开发者角色转向'AI 架构师'。" }
     ]
   }
 ];
@@ -345,7 +403,19 @@ export const learningTasks = [
   "演示数据：准备一个火锅店知识库。",
   "作品介绍：写项目亮点。",
   "复盘卡点：列出下一阶段最需要补的 3 个点。",
-  "是否买课判断：根据卡点决定是否买专项课。"
+  "是否买课判断：根据卡点决定是否买专项课。",
+  "Agentic RL：用 LangGraph 搭建一个 Agent 模拟环境，观察多步决策轨迹。",
+  "Fact-Graph Memory：设计一个从对话中提取事实并存入图数据库的流程。",
+  "World Model：用 LLM 模拟一个'如果用户执行X操作会怎样'的规划模块。",
+  "模型专业化：对比通用模型和代码专用模型在同一编程任务上的表现。",
+  "Intent-Driven Guardrails：准备 10 条意图攻击样本，测试关键词过滤 vs 意图分析的拦截率。",
+  "端侧 AI：用 Ollama 在本地部署 7B 模型，测试问答和代码补全效果。",
+  "KV Cache 压缩：用 vLLM 部署长上下文模型，对比压缩前后的显存占用和延迟。",
+  "AI for Science：用 Claude Science 或类似工具完成一次文献综述 + 数据分析。",
+  "Multi-Agent Orchestration：用 LangGraph 设计一个多 Agent 客服系统，含状态同步和故障恢复。",
+  "AI Coding Agent：用 Claude Code 自主修复一个中等难度 Bug，记录完整流程。",
+  "实时语音 AI：对比传统 ASR→LLM→TTS 和端到端语音模型的延迟差异。",
+  "Agent 安全总检查：设计一套完整的 Agent 安全护栏方案(输入→推理→输出→权限→审计)。"
 ];
 
 export const glossary = [
@@ -355,18 +425,45 @@ export const glossary = [
   { term: "状态机", desc: "把业务对象的状态和可执行动作定义清楚，例如 waiting_parse -> processing -> success/failed。" },
   { term: "死信队列", desc: "多次处理失败的任务进入死信，等待人工处理或后续排查。" },
   { term: "OpenAPI / Swagger", desc: "接口文档规范，帮助前后端和 AI 工具理解接口结构。" },
-  { term: "BOLA", desc: "Broken Object Level Authorization，对象级越权，API 安全高风险问题。" }
+  { term: "BOLA", desc: "Broken Object Level Authorization，对象级越权，API 安全高风险问题。" },
+  { term: "Agentic RL", desc: "用强化学习专门训练 AI Agent 的多步决策能力，2026 年 Agent 训练主流方法。" },
+  { term: "Fact-Graph Memory", desc: "Agent 的结构化长期记忆，把事实存入知识图谱，支持图遍历+向量检索。" },
+  { term: "World Model", desc: "让 AI 理解物理世界因果关系的内部模拟器，在行动前先预测后果。" },
+  { term: "Intent-Driven Guardrails", desc: "基于意图推理的 AI 安全系统，理解用户真实意图而非只匹配关键词。" },
+  { term: "On-Device AI", desc: "在手机/PC/IoT 设备上直接运行 AI 模型，数据不出本地。" },
+  { term: "KV Cache 压缩", desc: "优化长上下文推理的显存和速度，2026 年长上下文部署关键技术。" },
+  { term: "AI for Science", desc: "AI 深度参与科学研究：假设生成、实验设计、数据分析、论文写作。" },
+  { term: "Model Specialization", desc: "从通用大模型走向垂直领域专家模型，用专业数据和 RL 达到极致效果。" },
+  { term: "端云协同", desc: "简单任务在端侧设备执行，复杂任务上传云端，2026 年主流部署模式。" }
 ];
 
-export const resources = [
-  { name: "Agnes 2.0 Flash 文档", url: "https://agnes-ai.com/zh-Hans/docs/agnes-20-flash" },
-  { name: "Agnes Cherry Studio 集成文档", url: "https://agnes-ai.com/zh-Hans/docs/cid6" },
-  { name: "MDN HTTP", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP" },
-  { name: "Node.js Learn", url: "https://nodejs.org/learn/getting-started/introduction-to-nodejs" },
-  { name: "Express Guide", url: "https://expressjs.com/en/guide/routing/" },
-  { name: "PostgreSQL Docs", url: "https://www.postgresql.org/docs/current/" },
-  { name: "Redis Docs", url: "https://redis.io/docs/latest/" },
-  { name: "Docker Docs", url: "https://docs.docker.com/get-started/" },
-  { name: "Nginx Docs", url: "https://nginx.org/en/docs/" },
-  { name: "OWASP API Security", url: "https://owasp.org/API-Security/editions/2023/en/0x11-t10/" }
+export type Resource = {
+  name: string;
+  url: string;
+  category: string;
+  note?: string;
+};
+
+export const resources: Resource[] = [
+  { name: "Agnes 2.0 Flash 文档", url: "https://agnes-ai.com/zh-Hans/docs/agnes-20-flash", category: "本站 AI 助手", note: "本站 Ask AI 使用的模型文档" },
+  { name: "Agnes Cherry Studio 集成文档", url: "https://agnes-ai.com/zh-Hans/docs/cid6", category: "本站 AI 助手" },
+  { name: "MDN Web 文档（中文）", url: "https://developer.mozilla.org/zh-CN/", category: "前端", note: "HTML/CSS/JS 最权威的入门与查询手册" },
+  { name: "MDN HTTP", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP", category: "前端", note: "理解前后端通信的地基" },
+  { name: "React 官方文档（中文）", url: "https://zh-hans.react.dev/", category: "前端", note: "新版文档对初学者非常友好，从 Hooks 讲起" },
+  { name: "Next.js 官方文档", url: "https://nextjs.org/docs", category: "前端", note: "本项目使用的框架，重点看 App Router 部分" },
+  { name: "TypeScript 官方手册", url: "https://www.typescriptlang.org/docs/handbook/intro.html", category: "前端" },
+  { name: "Node.js Learn", url: "https://nodejs.org/learn/getting-started/introduction-to-nodejs", category: "后端" },
+  { name: "Express Guide", url: "https://expressjs.com/en/guide/routing/", category: "后端" },
+  { name: "PostgreSQL Docs", url: "https://www.postgresql.org/docs/current/", category: "后端" },
+  { name: "Prisma 文档", url: "https://www.prisma.io/docs", category: "后端", note: "Node.js 生态最常用的 ORM，类型安全" },
+  { name: "Redis Docs", url: "https://redis.io/docs/latest/", category: "后端" },
+  { name: "Docker Docs", url: "https://docs.docker.com/get-started/", category: "部署运维" },
+  { name: "Nginx Docs", url: "https://nginx.org/en/docs/", category: "部署运维" },
+  { name: "OWASP API Security", url: "https://owasp.org/API-Security/editions/2023/en/0x11-t10/", category: "安全", note: "API 安全十大风险，做后端必读" },
+  { name: "OpenAI 开发文档", url: "https://platform.openai.com/docs", category: "AI 应用", note: "模型调用、结构化输出、工具调用的官方参考" },
+  { name: "Anthropic (Claude) 文档", url: "https://docs.anthropic.com/", category: "AI 应用", note: "Tool Use、Prompt 工程指南写得非常好" },
+  { name: "Vercel AI SDK", url: "https://sdk.vercel.ai/docs", category: "AI 应用", note: "Next.js 项目里做流式对话最顺手的 SDK" },
+  { name: "LangGraph 文档", url: "https://langchain-ai.github.io/langgraph/", category: "AI 应用", note: "Agent 编排与状态管理框架" },
+  { name: "pgvector", url: "https://github.com/pgvector/pgvector", category: "AI 应用", note: "PostgreSQL 向量扩展，RAG 入门首选" },
+  { name: "OpenAI Cookbook", url: "https://cookbook.openai.com/", category: "AI 应用", note: "大量可直接跑的示例代码" }
 ];

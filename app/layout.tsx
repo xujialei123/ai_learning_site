@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import AskAssistant from "@/components/AskAssistant";
 
 export const metadata: Metadata = {
-  title: "AI 全栈后端与 AI 应用学习站 V6",
+  title: "AI 全栈后端与 AI 应用学习站",
   description: "Next.js + Agnes AI 选词解释学习网站"
 };
 

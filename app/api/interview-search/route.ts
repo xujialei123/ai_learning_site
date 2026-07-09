@@ -72,8 +72,13 @@ export async function POST(req: NextRequest) {
 2. 每个元素包含 question、answer、category、difficulty、tags。
 3. category 只能从：前端、后端、数据库、Redis、架构、AI应用、RAG、Agent、部署运维、安全、综合 中选择。
 4. difficulty 只能从：基础、中级、高级、综合 中选择。
-5. answer 要适合学习，不能只有一句话，最好包含要点、项目场景、常见误区。
-6. 题目要偏真实面试和真实项目，不要太水。`;
+5. answer 必须详细、适合学习，是一份能直接拿来复习的讲解，不能只有一两句话。每道题的 answer 至少 300 字，并按以下小标题分段（纯文本，不要用 # * \` 等 markdown 符号），每个小标题单独成行：
+   核心概念：用一两句话讲清本质。
+   原理与机制：底层怎么工作、为什么这样设计。
+   项目场景：在真实项目里怎么用、解决什么问题。
+   常见误区：面试者容易答错或忽略的点。
+   加分回答：能体现深度的延伸点或最佳实践。
+6. 题目要偏真实面试和真实项目，有一定深度和区分度，不要太水。`;
 
     const userPrompt = `请生成 ${count} 道技术面试题。
 
@@ -85,7 +90,7 @@ export async function POST(req: NextRequest) {
 [
   {
     "question": "Redis 为什么不能直接替代 MySQL？",
-    "answer": "Redis 主要是内存键值数据库，适合缓存、限流、锁等场景...",
+    "answer": "核心概念：Redis 是基于内存的键值数据库，MySQL 是持久化的关系型数据库，两者定位不同，不能相互替代。\n原理与机制：Redis 数据主要存在内存中，读写走内存所以极快，但内存容量有限、成本高；持久化靠 RDB 快照和 AOF 日志，异常场景仍可能丢少量数据。MySQL 数据落盘，支持事务 ACID、复杂 SQL 查询、多表关联和二级索引。\n项目场景：真实项目里通常 MySQL 存业务主数据（订单、用户），Redis 做缓存热点数据、限流、分布式锁、排行榜、会话等，二者配合使用。\n常见误区：把 Redis 当成主库存所有数据；忽略缓存与数据库的一致性（更新数据库后没删缓存导致脏读）；以为 Redis 完全不会丢数据。\n加分回答：能讲清缓存更新策略（Cache Aside）、缓存穿透/击穿/雪崩的应对，以及 Redis 持久化与主从、哨兵、集群的取舍。",
     "category": "Redis",
     "difficulty": "基础",
     "tags": ["Redis", "缓存", "数据库"]
@@ -104,8 +109,8 @@ export async function POST(req: NextRequest) {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.35,
-        max_tokens: Math.max(1200, count * 300)
+        temperature: 0.5,
+        max_tokens: Math.min(Math.max(2000, count * 800), 8000)
       })
     });
 

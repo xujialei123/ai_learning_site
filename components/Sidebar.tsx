@@ -1,35 +1,71 @@
 
-import Link from "next/link";
+"use client";
 
-const links = [
-  ["/", "首页"],
-  ["/system", "系统总览"],
-  ["/frontend", "前端完整知识体系"],
-  ["/backend", "后端完整知识体系"],
-  ["/ai", "AI应用完整知识体系"],
-  ["/features", "功能到技术栈映射"],
-  ["/flows", "请求/数据/AI链路"],
-  ["/demos", "练习Demo实验室"],
-  ["/interview", "AI面试题库"],
-  ["/tasks", "60天任务制学习"],
-  ["/glossary", "术语库"],
-  ["/resources", "可靠链接"]
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const groups: Array<{ title: string; links: Array<[string, string]> }> = [
+  {
+    title: "开始",
+    links: [
+      ["/", "首页 · 学习路径"],
+      ["/system", "系统总览"],
+      ["/flows", "请求/数据/AI 链路"]
+    ]
+  },
+  {
+    title: "知识体系",
+    links: [
+      ["/frontend", "前端知识体系"],
+      ["/backend", "后端知识体系"],
+      ["/ai", "AI 应用知识体系"],
+      ["/features", "功能到技术栈映射"]
+    ]
+  },
+  {
+    title: "练习与自测",
+    links: [
+      ["/demos", "练习 Demo 实验室"],
+      ["/tasks", "任务制学习计划"],
+      ["/interview", "AI 面试题库"]
+    ]
+  },
+  {
+    title: "查询",
+    links: [
+      ["/glossary", "术语库"],
+      ["/resources", "可靠链接"]
+    ]
+  }
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="sidebar">
       <div className="brand">
         <div className="logo">AI</div>
         <div>
-          <strong>AI 全栈后端与 AI 应用系统化学习站 V6</strong>
-          <span>后端 + AI 应用 + 项目落地 + Agnes</span>
+          <strong>AI 全栈学习站</strong>
+          <span>前端 · 后端 · AI 应用 · 项目落地</span>
         </div>
       </div>
 
       <nav className="nav">
-        {links.map(([href, label]) => (
-          <Link href={href} key={href}>{label}</Link>
+        {groups.map((group) => (
+          <div className="navGroup" key={group.title}>
+            <div className="navGroupTitle">{group.title}</div>
+            {group.links.map(([href, label]) => (
+              <Link
+                href={href}
+                key={href}
+                className={pathname === href ? "active" : undefined}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         ))}
       </nav>
 
