@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 
 type AskMode = "explain" | "project" | "practice" | "manual";
@@ -34,57 +34,30 @@ export default function AskAssistant() {
   const [thinking, setThinking] = useState(false);
   const queueRef = useRef<Array<{ mode: AskMode; question: string }>>([]);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const userScrolledUpRef = useRef(false);
-  const isAutoScrollingRef = useRef(false);
+  // 只看实际滚动位置：贴近底部就跟随新消息，离开底部就停止跟随
+  const pinnedRef = useRef(true);
+  const [showJump, setShowJump] = useState(false);
 
-  const isAtBottom = useCallback(() => {
-    const el = bodyRef.current;
-    if (!el) return true;
-    const threshold = 50;
-    return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-  }, []);
-
-  useEffect(() => {
+  function handleBodyScroll() {
     const el = bodyRef.current;
     if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    pinnedRef.current = atBottom;
+    setShowJump(!atBottom);
+  }
 
-    const handleScroll = () => {
-      if (isAutoScrollingRef.current) return;
-
-      if (isAtBottom()) {
-        userScrolledUpRef.current = false;
-      } else {
-        userScrolledUpRef.current = true;
-      }
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      if (e.deltaY < 0) {
-        userScrolledUpRef.current = true;
-      } else if (e.deltaY > 0 && isAtBottom()) {
-        userScrolledUpRef.current = false;
-      }
-    };
-
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    el.addEventListener("wheel", handleWheel, { passive: true });
-
-    return () => {
-      el.removeEventListener("scroll", handleScroll);
-      el.removeEventListener("wheel", handleWheel);
-    };
-  }, [isAtBottom]);
+  function jumpToBottom() {
+    const el = bodyRef.current;
+    if (!el) return;
+    pinnedRef.current = true;
+    setShowJump(false);
+    el.scrollTop = el.scrollHeight;
+  }
 
   useEffect(() => {
-    if (!userScrolledUpRef.current) {
+    if (pinnedRef.current) {
       const el = bodyRef.current;
-      if (el) {
-        isAutoScrollingRef.current = true;
-        el.scrollTop = el.scrollHeight;
-        requestAnimationFrame(() => {
-          isAutoScrollingRef.current = false;
-        });
-      }
+      if (el) el.scrollTop = el.scrollHeight;
     }
   }, [messages, loading, thinking]);
 
@@ -140,7 +113,9 @@ export default function AskAssistant() {
     setOpen(true);
     setToolbar(null);
     setThinking(true);
-    userScrolledUpRef.current = false;
+    // 发新问题时重新跟随到底部
+    pinnedRef.current = true;
+    setShowJump(false);
 
     const pageTitle = document.title;
     const pageContext = document.body.innerText.slice(0, 7000);
@@ -265,7 +240,7 @@ export default function AskAssistant() {
               <button className="ghost" onClick={() => setOpen(false)}>关闭</button>
             </div>
 
-            <div className="aiDrawerBody" ref={bodyRef}>
+            <div className="aiDrawerBody" ref={bodyRef} onScroll={handleBodyScroll}>
               {selected && (
                 <div className="selectedBox">
                   <b>当前选中：</b>
@@ -330,6 +305,12 @@ export default function AskAssistant() {
               )}
             </div>
 
+            {showJump && (
+              <button className="jumpToBottom" onClick={jumpToBottom}>
+                ↓ 回到底部{(loading || thinking) ? "（回复中）" : ""}
+              </button>
+            )}
+
             <div className="aiDrawerFooter">
               <div className="quickRow">
                 <button onClick={() => ask("explain")} disabled={loading || thinking}>解释选中内容</button>
@@ -341,7 +322,7 @@ export default function AskAssistant() {
               <textarea
                 className="askInput"
                 value={input}
-                placeholder={loading || thinking ? "正在回复中，消息会进入排队..." : "也可以手动提问，比如：Redis限流在AI客服系统里怎么设计？"}
+                placeholder={loading || thinking ? "正在回复中，消息会进入排队..." : "也可以手动提问，比如：奶茶店点单系统里 Redis 限流怎么设计？"}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {

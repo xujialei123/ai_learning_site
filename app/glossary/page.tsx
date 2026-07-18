@@ -15,14 +15,17 @@ export default function GlossaryPage() {
 
   return (
     <>
-      <Hero title="术语库" desc="后端与 AI 应用常用术语速查。遇到不懂的词，也可以直接选中问 AI。" />
+      <Hero
+        title="术语库"
+        desc="后端、服务器、部署、架构与 AI 应用名词速查。指挥 AI 前先搜准词：SSH、upstream、幂等、熔断、BFF……选中也能直接问站内 AI。"
+      />
 
       <Section title="搜索术语">
         <input
           className="searchBox"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="搜索：Webhook、Rerank、RBAC、队列、Prompt Injection..."
+          placeholder="搜索：SSH、Nginx、Docker、幂等、熔断、BFF、Webhook、RAG..."
         />
 
         {filtered.map((item) => (

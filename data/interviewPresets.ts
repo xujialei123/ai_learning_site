@@ -260,5 +260,151 @@ export const presetQuestions: Omit<InterviewQuestion, "id" | "createdAt">[] = [
     tags: ["AI项目", "技术评审", "架构设计"],
     source: "manual",
     topic: "全栈+AI面试题"
+  },
+
+  // ============ 2026 AI 应用高频 ============
+  {
+    question: "MCP 和 Function Calling 有什么区别？各自适合什么场景？",
+    answer: "Function Calling 是模型 API 内置能力，一次请求内模型输出 tool name+参数，适合应用内嵌的少量工具。MCP(Model Context Protocol) 是开放协议，工具封装成独立 Server，多个 Agent 客户端可发现复用，适合跨应用工具生态和统一治理。生产两者可并存：内嵌用 FC，共享工具库用 MCP。",
+    category: "Agent",
+    difficulty: "高级",
+    tags: ["MCP", "Function Calling", "工具调用"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Prompt Engineering 和 Context Engineering 有什么区别？",
+    answer: "PE 关注怎么写指令(System/约束/示例)；CE 关注模型最终看到什么——检索哪些 chunk、保留多少历史、工具结果怎么组装、Token 预算怎么分配。RAG 落地问题 80% 在上下文构建(检索差、塞太多、顺序不对)，不是多写两句 Prompt。面试要结合项目讲你如何设计上下文管道。",
+    category: "AI应用",
+    difficulty: "高级",
+    tags: ["Context Engineering", "Prompt", "RAG"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Agent Loop 是什么？和普通 Workflow 有什么区别？",
+    answer: "Agent Loop(ReAct) 是 Thought→Action→Observation 循环，模型自主选工具直到完成或触达步数上限。Workflow 是预定义状态机，步骤和分支固定，可控可观测。选型：开放探索用 Agent(要加步数限制/白名单)，投诉/审批等固定流程用 Workflow/LangGraph。",
+    category: "Agent",
+    difficulty: "高级",
+    tags: ["Agent Loop", "ReAct", "Workflow", "LangGraph"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Agent Memory 怎么设计？短期记忆和长期记忆怎么区分？",
+    answer: "短期记忆=当前会话 messages，请求级或 Redis 暂存；长期记忆=跨会话的用户偏好/事实，存数据库或向量库，由 LLM 从对话提取事实后写入。注意：敏感信息脱敏、按用户/租户隔离、支持查看删除(GDPR)。不要把全部历史塞进上下文，会爆 Token；用摘要或检索式记忆。",
+    category: "Agent",
+    difficulty: "高级",
+    tags: ["Memory", "Agent", "上下文"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "RAG 召回率低怎么系统性排查？",
+    answer: "按链路逐级：1) 解析是否丢内容(表格/页眉)；2) 切片是否合理(500 Token+15%重叠)；3) Embedding 模型是否匹配语种；4) Metadata 过滤是否误杀；5) 是否需要 Query Rewrite；6) 是否缺 Hybrid Search+Rerank；7) TopK 有答案但生成错才是 Prompt 问题。每步用黄金评估集验证，不要跳步改 Prompt。",
+    category: "RAG",
+    difficulty: "高级",
+    tags: ["RAG", "召回率", "排查"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Hybrid Search、Query Rewrite、Rerank 分别解决什么问题？",
+    answer: "Hybrid：向量懂语义+关键词懂编号/专有名词，互补召回；Query Rewrite：把口语问题改成知识库书面表述，提高召回；Rerank：粗召回 Top20-50 后用 Cross-Encoder 精排取 Top3-5，提升最终上下文质量。典型链路：改写→混合检索→重排→生成。",
+    category: "RAG",
+    difficulty: "高级",
+    tags: ["Hybrid Search", "Rerank", "Query Rewrite"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "什么是 Harness Engineering？为什么 2026 面试常问？",
+    answer: "用工程骨架约束 LLM 不确定性：Zod 校验结构化输出、状态机限制 Agent 流程、工具白名单+后端硬鉴权、黄金集 CI 回归、全链路 Trace。体现你能做生产级 AI 而非只会调 API。面试要结合项目讲：评测门禁、权限、降级、成本监控具体怎么落地。",
+    category: "AI应用",
+    difficulty: "高级",
+    tags: ["Harness", "生产化", "工程化"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "生产级 AI 应用架构应包含哪些核心模块？",
+    answer: "1) 模型网关(路由/限流/熔断/计费)；2) Prompt/上下文管理；3) RAG 管道(解析/切片/检索)；4) Tool Calling+MCP 接入层；5) 评测与黄金集回归；6) 可观测(日志/Trace/指标)；7) 安全护栏(注入防护/PII/权限)；8) 多租户与成本管控。能画架构图并说明数据流即可。",
+    category: "架构",
+    difficulty: "高级",
+    tags: ["系统设计", "AI架构", "生产化"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "结构化输出失败时如何处理？",
+    answer: "1) 用 JSON mode/function calling 约束 Schema；2) 后端 Zod 校验；3) 失败重试 1-2 次(可降温)；4) 仍失败走降级(默认值/转人工/只返回纯文本)；5) 记录失败样本进评估集；6) 流式场景等完整输出后再解析，避免半截 JSON。关键：永远有 fallback，不能让解析错误打挂接口。",
+    category: "AI应用",
+    difficulty: "中级",
+    tags: ["结构化输出", "JSON", "容错"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "如何设计 AI 调用的幂等、限流和重试？",
+    answer: "幂等：客户端带 Idempotency-Key，服务端 Redis 记录已处理请求，防重复扣 Token/重复写库。限流：按用户/IP/接口维度 Redis 滑动窗口，AI 接口单独更严。重试：只重试超时/5xx/429，指数退避，POST 必须幂等。熔断：连续失败后快速失败+降级(缓存回复/转人工)。",
+    category: "后端",
+    difficulty: "高级",
+    tags: ["幂等", "限流", "重试", "AI API"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "LangGraph 解决什么问题？和 LangChain Agent 有何不同？",
+    answer: "LangGraph 用显式状态图管理 Agent：节点=步骤，边=条件，状态可持久化，支持中断、人工审批、断点恢复。比自由 ReAct Agent 更可控可观测，适合客服、审批等生产流程。LangChain Agent 偏快速原型，复杂生产更常用 LangGraph 定义状态机。",
+    category: "Agent",
+    difficulty: "高级",
+    tags: ["LangGraph", "Agent编排", "状态机"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "RAGAS 或黄金集评测要关注哪些指标？",
+    answer: "检索侧：命中率(答案是否在 TopK)、MRR；生成侧：忠实度(是否胡编)、答案相关性、拒答准确率；业务侧：转人工率、用户满意度。固定 50-100 条真实问题做黄金集，每次改 Prompt/切片/模型都跑回归，设 CI 门禁(如命中率>85%、幻觉<5%)。",
+    category: "RAG",
+    difficulty: "高级",
+    tags: ["RAGAS", "评测", "黄金集"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Prompt Caching 是什么？怎么用才省钱？",
+    answer: "缓存重复的长前缀(System Prompt、工具 Schema、固定模板)，避免每次全量计费。做法：静态内容放上下文最前且保持稳定，动态内容(检索结果、用户问题)放后面。前缀一致则命中缓存，可省 50-90% 输入 Token 成本并降低首 Token 延迟。",
+    category: "AI应用",
+    difficulty: "中级",
+    tags: ["Prompt Caching", "成本优化"],
+    source: "manual",
+    topic: "2026 AI应用面试"
+  },
+  {
+    question: "Node.js 事件循环和浏览器有什么区别？什么操作会阻塞？",
+    answer: "Node 多了 timers/poll/check/setImmediate 和 process.nextTick；浏览器没有这些。两者都会先清空微任务。Node 阻塞源：同步 JSON.parse、bcrypt 同步版、readFileSync、CPU 密集循环。解决：异步 API、worker_threads、监控 event loop delay。",
+    category: "后端",
+    difficulty: "中级",
+    tags: ["Node.js", "Event Loop", "阻塞"],
+    source: "manual",
+    topic: "2026 后端面试"
+  },
+  {
+    question: "Controller / Service / Repository 为什么要分层？",
+    answer: "Controller 只管 HTTP 入参出参；Service 写业务规则和事务；Repository 封装数据库。好处：业务逻辑可单测(Mock Repository)、换框架只改 Controller 薄层、代码职责清晰便于协作。面试可结合你项目里的上传/登录接口举例说明调用链。",
+    category: "后端",
+    difficulty: "基础",
+    tags: ["分层架构", "Controller", "Service"],
+    source: "manual",
+    topic: "2026 后端面试"
+  },
+  {
+    question: "描述一次你优化 RAG 检索效果的经历（STAR）",
+    answer: "S：客服命中率约 60%，用户抱怨答非所问。T：负责检索链路优化。A：调整切片 800→500 Token、加 15% 重叠；换中文 Embedding；加 Hybrid+Rerank；建 80 条黄金集每周回归。R：Top3 命中率升至 87%，转人工率降 12%。要点：用数据、讲清排查顺序、说明业务价值。",
+    category: "综合",
+    difficulty: "综合",
+    tags: ["STAR", "项目经验", "RAG优化"],
+    source: "manual",
+    topic: "2026 AI应用面试"
   }
 ];

@@ -24,6 +24,7 @@ const stages = [
     goal: "从零基础概念到 RAG、Agent、评估、护栏、前沿方向",
     links: [
       { href: "/ai", label: "AI 应用知识体系", desc: "含零基础入门篇和 2026 前沿篇" },
+      { href: "/ai-tools", label: "AI 编程工具教程", desc: "Claude Code、Codex、Cursor 及国产工具上手" },
       { href: "/features", label: "功能到技术栈映射", desc: "学会从一个功能反推需要哪些技术" }
     ]
   },
@@ -31,6 +32,7 @@ const stages = [
     stage: "第四阶段 · 动手与自测",
     goal: "边练边学，用打卡和面试题检验自己",
     links: [
+      { href: "/pitfalls", label: "真实项目踩坑集", desc: "看事故现场推根因，训练判断力" },
       { href: "/demos", label: "练习 Demo 实验室", desc: "交互式 Demo，动手理解概念" },
       { href: "/tasks", label: "任务制学习计划", desc: "每天一个任务，支持打卡记录进度" },
       { href: "/interview", label: "AI 面试题库", desc: "AI 生成面试题，自测掌握程度" }

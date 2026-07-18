@@ -5,7 +5,16 @@ import { aiGroups } from "@/data/content";
 export default function AiPage() {
   return (
     <>
-      <Hero title="AI 应用完整知识体系" desc="真实 AI 应用工程常用知识，不只包括 RAG，还包括模型调用、结构化输出、工具调用、Agent、评估、护栏、成本和生产化。" />
+      <Hero title="AI 应用完整知识体系" desc="RAG、Agent、工具调用、评测与生产化。每题带速记、面试答法、自测。2026 面试重点看「AI 面试高频考点」模块。" />
+
+      <Section title="怎么学才不会忘">
+        <ol>
+          <li><b>先搞清链路</b>：RAG = 解析→切片→向量→检索→生成；Agent = 想→调工具→看结果→循环。</li>
+          <li><b>优先学「AI 面试高频考点」</b>：MCP、Context Engineering、召回排查、LangGraph、评测，外面问得最多。</li>
+          <li><b>每张卡走一遍：速记 → 自测 → 面试</b>，能用自己的话讲给同事听，才算真会。</li>
+          <li><b>别贪前沿概念</b>：LLM Wiki、GBrain 等了解即可，面试先拿下 RAG/Agent/工具调用。</li>
+        </ol>
+      </Section>
 
       <Section title="RAG 知识库工程图">
         <img className="diagram" src="/diagrams/rag-flow.svg" alt="RAG知识库工程链路" />

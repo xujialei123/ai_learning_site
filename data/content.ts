@@ -1,10 +1,22 @@
 
+import { backendOpsGlossary, backendOpsGroups } from "./backendOps";
+
 export type KnowledgeItem = {
   name: string;
   desc: string;
+  /** 一句话速记，打开卡片第一眼看到 */
+  oneLine?: string;
   projectUse: string;
   mistake: string;
+  /** 通俗类比，帮助建立直觉 */
+  analogy?: string;
+  /** 结构化要点，比 understanding 长文更好记 */
+  keyPoints?: string[];
   understanding?: string;
+  /** 面试常问 + 30 秒答法 */
+  interviewQA?: { question: string; answer: string };
+  /** 记忆口诀或对比表 */
+  memoryTip?: string;
   difficulty?: string;
 };
 
@@ -22,7 +34,7 @@ export type FeatureMap = {
   risks: string[];
 };
 
-export const backendGroups: KnowledgeGroup[] = [
+const backendGroupsCore: KnowledgeGroup[] = [
   {
     title: "后端基础与 API",
     intro: "解决前端和后端怎么通信、接口怎么设计、错误怎么返回、请求怎么被保护。",
@@ -40,6 +52,18 @@ export const backendGroups: KnowledgeGroup[] = [
     ]
   },
   {
+    title: "Node.js 运行时与框架",
+    intro: "前端转后端最容易忽略的一块：JS 在服务端怎么跑、为什么单线程能扛高并发、内存和进程怎么管。",
+    items: [
+      { name: "事件循环与非阻塞 IO", desc: "Node.js 单线程处理高并发的核心机制，和浏览器事件循环有差异。", projectUse: "一个进程同时处理几百个 AI 请求、数据库查询、文件读写。", mistake: "不要在请求处理中写 CPU 密集的同步代码，会阻塞所有用户。", understanding: "1) 单线程模型：JS 主线程只有一个，但 IO(网络/文件/数据库)交给底层 libuv 线程池和操作系统异步完成，所以单线程也能同时挂起几百个请求；2) 事件循环阶段：timers(setTimeout)→pending callbacks→poll(IO 回调)→check(setImmediate)→close，每轮之间清空微任务(Promise.then/queueMicrotask)；3) 与浏览器差异：Node 有 setImmediate 和 process.nextTick(优先级最高，滥用会饿死 IO)；4) 阻塞的代价：一段 200ms 的同步循环(如大 JSON.parse、同步加密)会让所有并发请求都卡 200ms；5) 常见阻塞源：JSON.parse 超大对象、正则回溯灾难、同步文件读写(readFileSync)、bcrypt 同步版；6) 解决方案：CPU 密集任务放 worker_threads 或独立服务、大数据分批处理、用异步 API；7) 监控：event loop delay(用 perf_hooks.monitorEventLoopDelay)超过 100ms 要告警；8) 面试高频：解释为什么 Node 适合 IO 密集不适合 CPU 密集。" },
+      { name: "进程与多核", desc: "单个 Node 进程只用一个 CPU 核心，生产环境要用多进程或容器副本吃满多核。", projectUse: "4 核服务器上跑 4 个进程实例，配合 PM2 或 K8s。", mistake: "不要把内存里的状态(如计数器、会话)存在进程内，多进程下会不一致。", understanding: "1) cluster 模式：主进程 fork 多个工作进程，共享同一端口，操作系统做负载分发；2) PM2 实践：pm2 start app.js -i max 按 CPU 核数启动，自动重启崩溃进程；3) worker_threads：同一进程内开线程，适合 CPU 密集计算(如本地 Embedding、PDF 解析)，可共享内存(SharedArrayBuffer)；4) 进程 vs 线程选择：隔离性要求高用进程，需要共享大量数据用线程；5) 无状态原则：多进程后，任何进程内存里的状态(限流计数、缓存、会话)都要挪到 Redis，否则每个进程各算各的；6) 容器时代：K8s 里通常一个容器一个 Node 进程，靠副本数(replicas)水平扩展，cluster 模式反而少用了；7) 进程通信：cluster 用 process.send，跨机器用 Redis Pub/Sub 或消息队列；8) 崩溃处理：uncaughtException 后应该记日志并退出让 PM2/K8s 拉起新进程，而不是硬扛着继续跑。" },
+      { name: "Stream 流处理", desc: "边读边处理边写，不把大文件一次性载入内存。", projectUse: "上传大 PDF 直接流式转存对象存储、SSE 流式返回 AI 回复、导出大 CSV。", mistake: "不要用 fs.readFile 读几百 MB 的文件再处理，内存会爆。", understanding: "1) 四种流：Readable(可读，如文件读取/HTTP 请求体)、Writable(可写，如 HTTP 响应)、Duplex(双工，如 socket)、Transform(转换，如 gzip)；2) pipe 管道：readStream.pipe(transform).pipe(writeStream)，自动处理背压；3) 背压(backpressure)：下游写得慢时自动暂停上游读取，防止内存堆积，这是 pipe 相比手动监听 data 事件的最大价值；4) pipeline 函数：stream.pipeline() 比 pipe 多了错误传递和资源清理，生产代码优先用它；5) Web Streams：Next.js Route Handler 里用 ReadableStream 实现 SSE 流式输出，和 Node Streams API 不同但概念一致；6) 实战场景：文件上传流式转存(不落本地盘)、大表导出 CSV(边查边写)、日志处理、AI 流式响应中转；7) 常见坑：忘记处理 error 事件导致进程崩溃、流被消费一次后不能重复读；8) 内存对比：readFile 读 1GB 文件占 1GB 内存，流式处理只占几十 KB 缓冲区。" },
+      { name: "内存管理与泄漏排查", desc: "Node 进程内存持续上涨最终 OOM，是后端最常见的线上事故之一。", projectUse: "AI 服务跑几天后内存从 200MB 涨到 2GB 被 K8s 杀掉重启。", mistake: "重启解决不了泄漏，只是掩盖问题，要找到泄漏源。", understanding: "1) V8 内存结构：新生代(短命对象，Scavenge 回收快)、老生代(长命对象，Mark-Sweep 较慢)，默认老生代上限约 2-4GB(--max-old-space-size 调整)；2) 常见泄漏源：全局 Map/数组只增不减(如自己实现的缓存没有上限)、事件监听器重复注册不移除(EventEmitter memory leak 警告)、闭包持有大对象、定时器未清理；3) 排查流程：观察内存曲线(持续上涨还是锯齿状正常波动)→线上抓 heap snapshot→Chrome DevTools Memory 面板对比两次快照找增长的对象；4) 抓快照：node --inspect 或 v8.writeHeapSnapshot()，也可用 heapdump 库；5) 缓存必须有上限：进程内缓存用 lru-cache 设置 max 条数和 TTL，不要用裸 Map；6) 监控指标：process.memoryUsage() 的 heapUsed/rss，配合 Prometheus 画曲线；7) 快速止血：设置 K8s 内存上限 + 自动重启，同时保留现场排查；8) 压测验证：修复后用固定流量压测 1 小时，确认内存稳定。" },
+      { name: "框架选型", desc: "Express、Koa、Fastify、NestJS、Next.js API 各自适合什么场景。", projectUse: "本站用 Next.js Route Handlers，独立后端服务常用 NestJS 或 Fastify。", mistake: "不要纠结框架本身，分层思想和工程能力才是可迁移的。", understanding: "1) Express：生态最大、教程最多、中间件模式简单，适合入门和中小项目，缺点是回调风格老、无内置 TS 支持；2) Koa：Express 团队重写，洋葱模型中间件 + async/await 原生支持，更轻但生态需要自己拼；3) Fastify：性能最强(每秒请求数约为 Express 2-3 倍)、内置 JSON Schema 校验和日志(pino)，现代新项目推荐；4) NestJS：企业级框架，装饰器 + 依赖注入 + 模块化，强制分层(Controller/Service/Module)，适合团队协作和大项目，学习曲线较陡；5) Next.js Route Handlers：前后端一体，适合全栈应用和 BFF 层，重后端逻辑(队列/Worker/长连接)不适合；6) 选型建议：学习用 Express 或 Fastify 理解原理，求职看目标公司技术栈(国内 NestJS/Egg 多)，个人全栈项目用 Next.js；7) 共同概念：无论哪个框架，路由、中间件、参数校验、错误处理、分层的思想都一样；8) 迁移成本：业务逻辑放在 Service 层且不依赖框架对象(req/res)，换框架时只需重写 Controller 薄层。" },
+      { name: "全局错误处理与优雅停机", desc: "错误要统一兜底，进程退出前要处理完手头的请求。", projectUse: "发布新版本时不能掐断用户正在进行的 AI 对话。", mistake: "不要在每个 Controller 里复制粘贴 try-catch，用全局错误中间件统一处理。", understanding: "1) 错误分类：业务错误(BizError，预期内，返回 4xx)、系统错误(数据库挂了，返回 500)、程序 Bug(TypeError，返回 500 并告警)；2) 全局错误中间件：Express 的 (err, req, res, next) 四参数中间件放在最后，统一转换为标准错误响应并记日志；3) 异步错误：Express 4 不会自动捕获 async 函数抛错(要用 wrapper 或 express-async-errors)，Express 5/Fastify/Koa 原生支持；4) 未捕获异常：process.on('uncaughtException') 和 process.on('unhandledRejection') 记录日志后退出进程(状态已不可信)，由 PM2/K8s 拉起新进程；5) 优雅停机流程：收到 SIGTERM→停止接收新请求(server.close)→等待存量请求完成(设 30s 超时)→关闭数据库/Redis 连接→退出；6) K8s 配合：preStop hook + terminationGracePeriodSeconds，滚动发布时先摘流量再停进程；7) SSE/长连接：停机时要主动通知客户端重连，不能默默断开；8) 健康检查配合：停机开始后 /health 返回失败，让负载均衡不再分发新流量过来。" }
+    ]
+  },
+  {
     title: "后端工程分层",
     intro: "解决代码怎么组织，避免 AI 一次生成一堆能跑但难维护的代码。",
     items: [
@@ -51,6 +75,19 @@ export const backendGroups: KnowledgeGroup[] = [
       { name: "Config 配置层", desc: "环境变量、模型配置、数据库地址、限流阈值统一管理。", projectUse: ".env、config.ts、模型供应商配置。", mistake: "不要把 API Key 写死在代码里。", understanding: "1) 环境变量(.env)：数据库连接(DATABASE_URL)、API Key(OPENAI_API_KEY)、服务地址(API_BASE_URL)；2) 环境分级：.env.development、.env.staging、.env.production、.env.local(不提交)；3) 配置文件(config.ts)：用 zod 校验环境变量，解析为类型安全的对象；4) 配置分层：环境变量 → 默认值 → 业务配置 → 运行时配置；5) 启动校验：服务启动时检查必填变量，缺失则报错退出；6) 敏感信息：.env 加入 .gitignore，用 .env.example 说明格式，密钥用 Vault 或云密钥管理；7) 动态配置：限流阈值、模型参数可通过 Redis/配置中心热更新；8) 配置中心：大规模系统用 Nacos/Apollo/Consul 集中管理配置；9) 类型安全：从环境变量到 config 对象全链路 TypeScript 类型推导；10) 安全原则：API Key 不打印到日志、不暴露给前端、定期轮换。" },
       { name: "Provider / Adapter", desc: "对外部服务做抽象，避免业务绑定某个供应商。", projectUse: "AIProvider、StorageProvider、ChannelAdapter。", mistake: "不要让业务代码直接写死某个模型或平台。", understanding: "1) 接口定义：interface AIProvider { chat(messages): Promise<Response>; embedding(text): Promise<number[]> }；2) 实现类：OpenAIClient implements AIProvider、ClaudeClient implements AIProvider；3) 依赖注入：Service 依赖 AIProvider 接口，运行时注入具体实现；4) 切换供应商：修改配置指向不同实现，业务代码不变；5) 适配器模式：企微/钉钉/飞书的消息格式统一转换为内部消息模型；6) 熔断降级：Provider 内部实现熔断逻辑，失败时切换备用；7) 测试友好：Mock Provider 返回固定结果，测试纯业务逻辑；8) 常见 Provider：AIProvider(模型调用)、StorageProvider(文件存储)、ChannelProvider(消息渠道)、PaymentProvider(支付)；9) 配置驱动：用配置文件指定使用哪个 Provider 实现；10) 版本升级：Provider 内部封装 SDK 版本升级，业务代码无感知。" },
       { name: "Domain Model", desc: "围绕业务概念建模，而不是围绕页面建模。", projectUse: "Merchant、KnowledgeDoc、ChatSession、ToolCall。", mistake: "不要让页面结构决定后端数据模型。", understanding: "1) 业务实体：Merchant(商家)、KnowledgeDoc(知识库文档)、ChatSession(会话)、ToolCall(工具调用)；2) 状态机：KnowledgeDoc 有 status 字段，定义状态流转 uploaded→processing→ready/failed，每个状态对应可执行操作；3) 值对象：不单独建表，嵌入主实体(如 settings JSONB、metadata JSON)；4) 关联关系：一对多(Merchant→KnowledgeDoc)、多对多(User↔Role)、一对一(User→Profile)；5) 字段设计：id(主键)、created_at(创建时间)、updated_at(更新时间)、deleted_at(软删除)、version(乐观锁)；6) 多租户字段：每张表都有 merchant_id，确保数据隔离；7) DDD 思考：聚合根(Merchant)、实体(KnowledgeDoc)、值对象(Money/Address)、领域服务；8) 避免贫血模型：业务逻辑放在 Domain Model 内部，而非全部堆在 Service；9) 模型命名：单数形式(Merchant)、字段用下划线(merchant_id)、状态用枚举；10) 反模式：不要为每个页面创建独立模型、不要用 JSON 存所有数据、不要忽略关联关系。" }
+    ]
+  },
+  {
+    title: "认证与用户体系实战",
+    intro: "每个项目都绕不开的注册、登录、第三方登录、账号安全，比 JWT 概念本身复杂得多。",
+    items: [
+      { name: "密码存储与加密", desc: "密码绝不能明文或简单哈希存储，要用专门的慢哈希算法加盐。", projectUse: "users 表的 password_hash 字段。", mistake: "MD5/SHA256 不能用来存密码，彩虹表几秒就能破解。", understanding: "1) 为什么不能用 MD5/SHA256：这些是快速哈希，GPU 每秒可算几十亿次，配合彩虹表(预计算的哈希字典)常见密码秒破；2) 正确算法：bcrypt(最常用)、argon2(更新更强，2015 密码哈希大赛冠军)、scrypt，它们故意算得慢(几十毫秒)让暴力破解成本极高；3) 加盐(salt)：每个用户随机生成不同的盐混入哈希，相同密码得到不同哈希值，bcrypt 自动处理盐；4) cost factor：bcrypt 的 rounds 参数(常用 10-12)控制计算成本，硬件变快时可调高；5) 验证流程：登录时用 bcrypt.compare(明文, 存储的哈希)对比，永远不解密(哈希不可逆)；6) 代码示例：注册 hash = await bcrypt.hash(password, 10)，登录 ok = await bcrypt.compare(password, user.passwordHash)；7) 密码策略：最少 8 位，鼓励长密码而非强制特殊字符(NIST 最新建议)，用 HIBP 检查是否是泄漏过的密码；8) 加密 vs 哈希：加密可逆(AES，用于存储需要还原的数据如手机号)，哈希不可逆(用于密码)，不要混淆。" },
+      { name: "注册登录完整流程", desc: "一个生产级的注册登录比想象中环节多：校验、防刷、验证、会话、日志。", projectUse: "管理后台和客服工作台的登录。", mistake: "登录失败提示不要区分'用户不存在'和'密码错误'，会被用来枚举用户。", understanding: "1) 注册流程：参数校验(邮箱格式/密码强度)→查重(邮箱是否已注册)→密码哈希→创建用户(事务内同时建默认配置)→发验证邮件→返回(不自动登录或自动登录看产品)；2) 邮箱验证：生成一次性 token(随机串存 Redis 24h 过期)，点击链接验证后标记 email_verified；3) 登录流程：频率限制(同 IP/同账号)→查用户→bcrypt 对比→生成 JWT 或 Session→记录登录日志(IP/设备/时间)→返回 token；4) 防枚举：无论用户不存在还是密码错，都返回同样的'账号或密码错误'，响应时间也要接近(密码错误时也做一次假哈希对比)；5) 登录失败锁定：连续失败 5 次锁定 15 分钟(计数存 Redis)，或要求验证码；6) 忘记密码：生成一次性重置 token 发邮箱→用户设置新密码→使所有旧会话失效；7) 会话管理：refresh token 存数据库可撤销，支持'退出所有设备'；8) 审计：注册、登录、改密码、异地登录都要记日志，异地登录可发通知。" },
+      { name: "验证码与防刷", desc: "图形验证码、短信验证码、行为验证，防止机器批量注册和短信轰炸。", projectUse: "注册发短信前的图形验证码、登录异常时的二次验证。", mistake: "短信接口不加防护会被刷爆，一晚上烧几千块短信费。", understanding: "1) 短信轰炸风险：发短信接口没防护，攻击者拿它轰炸任意手机号，你出钱还可能被投诉；2) 防护层次：图形验证码/行为验证(先证明是人)→频率限制(同手机号 60s 一条、每天 10 条，同 IP 每小时 20 条)→业务校验(该手机号是否走到了正常流程)；3) 图形验证码：简单字符验证码已能被 OCR 破解，推荐行为验证(滑块/点选，如 hCaptcha/Turnstile/极验)；4) 短信验证码设计：6 位数字、5 分钟过期、验证错误 5 次作废、存 Redis(key=手机号，value=码+尝试次数)；5) 验证码比对放服务端：前端只提交用户输入，判断逻辑必须在后端；6) 邮箱验证码：类似逻辑，成本低但到达率和及时性差；7) 监控告警：短信发送量突增要立即告警并自动熔断；8) 成本兜底：短信平台设置日消费上限。" },
+      { name: "OAuth 2.0 / 第三方登录", desc: "用微信、GitHub、Google 账号登录你的系统，不用自己管密码。", projectUse: "管理后台支持企业微信扫码登录。", mistake: "access_token 是给你后端用的，不要暴露给前端或存 localStorage。", understanding: "1) 核心角色：用户(资源所有者)、你的应用(客户端)、第三方(授权服务器如 GitHub)；2) 授权码流程(Authorization Code)：跳转第三方授权页→用户同意→带 code 回调你的后端→后端拿 code+client_secret 换 access_token→用 token 拉取用户信息(openid/邮箱/头像)→在你的系统查找或创建用户→发你自己的会话；3) 为什么用 code 中转：token 不经过浏览器 URL，防止泄漏，换 token 需要 client_secret 只有后端知道；4) state 参数：随机串防 CSRF，回调时校验是否是自己发起的授权；5) PKCE：移动端/SPA 没有安全存放 secret 的地方，用 code_verifier/code_challenge 替代；6) 账号绑定：第三方 openid 存 user_oauth_accounts 表(user_id + provider + provider_user_id)，支持一个用户绑多个第三方；7) 首次登录建号：拿不到邮箱时引导补充，或生成占位账号；8) 实战库：NextAuth.js(Auth.js) 封装了主流平台，自建后端可用 passport 或直接按协议写(逻辑不复杂)。" },
+      { name: "单点登录 SSO", desc: "一次登录，多个系统通用，企业内部系统标配。", projectUse: "管理后台、客服工作台、数据看板共用一套登录。", mistake: "SSO 登出要考虑所有子系统的会话，不是只清一个 cookie。", understanding: "1) 场景：公司有 N 个内部系统，不想让员工登录 N 次、维护 N 套密码；2) 中心认证服务(IdP)：所有系统(SP)都信任同一个认证中心，未登录时重定向到认证中心，登录后带票据回来；3) 主流协议：OIDC(OpenID Connect，基于 OAuth 2.0，JSON/JWT，新系统首选)、SAML(XML 老协议，大企业遗留系统多)、CAS(教育行业常见)；4) OIDC 流程：SP 重定向到 IdP→IdP 认证(可能已有会话直接通过)→发 id_token(JWT，含用户身份)→SP 验证签名建立本地会话；5) 单点登出(SLO)：IdP 通知所有 SP 清除会话(前端通道 iframe 或后端通道回调)，实现复杂常被简化；6) 同域简化方案：子系统都在 *.company.com 下时，共享顶域 cookie + 统一会话服务即可，不需要完整 SSO 协议；7) 自建 vs 采购：Keycloak(开源)、Auth0/Authing(SaaS)，中小团队不建议纯手写；8) 与 OAuth 的关系：OAuth 是授权(能不能访问资源)，OIDC 在其上加了认证(你是谁)，SSO 是产品形态。" },
+      { name: "双因素认证 2FA", desc: "密码之外再加一道验证，防止密码泄漏后账号被盗。", projectUse: "管理员账号强制开启 2FA。", mistake: "2FA 恢复码要在开启时就让用户保存，否则丢了手机就永远进不去。", understanding: "1) 三种因素：知道的(密码)、拥有的(手机/硬件钥匙)、生物特征(指纹)，2FA 就是组合其中两种；2) TOTP(最常用)：基于时间的一次性密码，服务器和 App(Google Authenticator/1Password)共享密钥，每 30 秒生成 6 位码，离线可用；3) 开启流程：服务端生成密钥→展示二维码(otpauth:// URI)→用户 App 扫码→用户输入当前 6 位码验证绑定成功→发放恢复码；4) 验证细节：允许前后一个时间窗(±30s)容忍时钟偏差，用过的码短期内不能重用(防重放)；5) 恢复码：一次性备用码(如 10 个)，哈希后存库，用户丢手机时用它登录；6) 其他方式：短信验证码(可被 SIM 劫持，安全性最弱)、Passkey/WebAuthn(指纹/面容，2026 年主流趋势，可直接替代密码)、硬件钥匙(YubiKey，安全最高)；7) 实现库：otplib/speakeasy 几行代码搞定 TOTP；8) 策略设计：普通用户可选、管理员强制、敏感操作(改密码/提现)即使登录了也再验一次(step-up auth)。" },
+      { name: "账号安全防护", desc: "暴力破解、撞库、会话劫持等常见攻击的防御组合。", projectUse: "登录接口的风控和告警。", mistake: "攻击者用泄漏的密码库撞库时，单看每个账号都只失败一两次，按 IP 维度才能发现。", understanding: "1) 暴力破解：对单个账号试大量密码，防御是失败锁定 + 验证码 + 慢哈希；2) 撞库：拿别处泄漏的邮箱密码组合批量尝试(赌用户到处用同一个密码)，特征是大量账号各失败一次，防御是按 IP/设备指纹限流 + 异常登录检测 + HIBP 弱密码检查；3) 会话劫持：偷到 cookie/token 冒充用户，防御是 httpOnly + Secure + SameSite cookie、token 绑定设备指纹、短有效期；4) 异地登录检测：记录常用 IP/设备，新设备登录发邮件/短信通知，高危操作要求二次验证；5) 风控分级：低风险直接放行、中风险加验证码、高风险要求 2FA 或短信验证、确认攻击直接封禁；6) 登录日志表：login_logs(user_id、ip、user_agent、成功/失败、时间)，是所有风控的数据基础；7) 会话撤销能力：改密码后使所有旧会话失效、支持用户查看和踢掉在线设备；8) 告警指标：登录失败率突增、单 IP 尝试账号数、新注册量突增。" }
     ]
   },
   {
@@ -70,6 +107,17 @@ export const backendGroups: KnowledgeGroup[] = [
     ]
   },
   {
+    title: "文件上传与存储实战",
+    intro: "上传看起来简单，做到生产级要处理大文件、断点续传、安全校验和图片处理。",
+    items: [
+      { name: "multipart 上传", desc: "浏览器上传文件的标准方式，后端用中间件解析。", projectUse: "知识库上传 PDF、用户头像上传。", mistake: "一定要限制文件大小和类型，否则接口会被大文件打挂。", understanding: "1) multipart/form-data：一次请求可携带多个文件和普通字段，用 boundary 分隔，浏览器 FormData 自动处理；2) 后端解析：Express 用 multer(memoryStorage 小文件/diskStorage 大文件)、Fastify 用 @fastify/multipart、Next.js Route Handler 用 request.formData()；3) 大小限制：中间件层设置 limits(如 10MB)，Nginx 也要配 client_max_body_size(默认才 1MB，经常被遗忘)；4) 类型校验：不能只看扩展名和 Content-Type(都可伪造)，要读文件头 Magic Number(PDF 是 %PDF、PNG 是 \\x89PNG)；5) 文件名处理：用 UUID 重命名存储，原始文件名只存数据库字段(防路径穿越和重名覆盖)；6) 存储流向：小文件可先落本地临时目录再转存，最好直接流式转存对象存储不落盘；7) 响应设计：返回文件 ID 和访问 URL，前端展示上传进度用 XMLHttpRequest.upload.onprogress 或 fetch + ReadableStream；8) 错误场景：超大小、类型不符、存储失败，都要返回明确错误码。" },
+      { name: "大文件分片与断点续传", desc: "几百 MB 的文件要切片上传，断网后从断点继续。", projectUse: "上传长录音、视频课件、大数据集。", mistake: "分片上传的合并和清理要做好，否则存储里会堆满孤儿分片。", understanding: "1) 为什么分片：大文件单请求容易超时失败且失败后要全部重传，切成 5-10MB 的分片逐个传，失败只重传单片；2) 流程：前端计算文件 hash(标识文件)→初始化上传(后端建 upload 记录返回 uploadId)→并发上传分片(带 uploadId+分片序号)→全部完成后调合并接口→后端按序合并或对象存储原生合并；3) 断点续传：上传前先查该 hash 已传了哪些分片，跳过已完成的；4) 秒传：hash 已存在于服务器时直接返回已有文件 URL，不用真传；5) hash 计算：大文件全量 MD5 很慢，可用抽样 hash(首中尾各取一段)或 Web Worker 后台算；6) 对象存储原生支持：S3/OSS 的 Multipart Upload API 直接提供 init/uploadPart/complete，优先用而不是自己实现合并；7) 清理机制：定时任务清理超过 24h 未完成的上传记录和分片；8) 前端库：可参考 tus 协议或 uppy 库，不必从零造轮子。" },
+      { name: "客户端签名直传", desc: "前端直接把文件传给对象存储，不经过你的服务器中转。", projectUse: "用户头像、聊天图片直传 OSS/S3。", mistake: "签名要限制路径、大小、类型和有效期，否则等于把存储桶敞开。", understanding: "1) 为什么直传：文件经过你的服务器中转会占用带宽和内存，直传让流量直接走对象存储，服务器只负责发签名；2) 流程：前端请求你的后端要上传凭证→后端校验用户权限后生成带签名的临时凭证(预签名 URL 或 policy 签名)→前端拿凭证直接 PUT/POST 到对象存储→上传完成后通知后端(或对象存储回调)落库；3) 预签名 URL：后端用 SDK 生成一个几分钟内有效的 URL，前端直接 PUT，最简单；4) 安全限制：签名中限定 key 前缀(merchant_123/avatars/)、Content-Length 范围、Content-Type、过期时间(5 分钟)；5) 落库确认：不能信前端说'我传完了'，要用对象存储回调或后端主动 HEAD 检查文件是否存在及大小；6) 私有读：文件默认私有，访问时后端生成带签名的临时读 URL(如 1 小时有效)；7) CDN 配合：公开资源(商品图)走 CDN 域名加速；8) 与服务端中转的取舍：需要在上传时做同步处理(如实时扫描)时仍走服务端中转。" },
+      { name: "图片处理", desc: "压缩、裁剪、缩略图、水印，前端体验和存储成本都靠它。", projectUse: "头像裁剪成多尺寸、聊天图片生成缩略图。", mistake: "不要把原图直接展示在列表页，一张 5MB 的图会拖垮整个页面。", understanding: "1) sharp 库：Node 生态最快的图片处理库(基于 libvips)，压缩/缩放/裁剪/格式转换/水印几行代码；2) 多尺寸策略：上传时生成 thumbnail(200px)/medium(800px)/original 三档，列表用小图详情用中图；3) 格式转换：统一转 WebP(比 JPEG 小 30%)或 AVIF，sharp().webp({ quality: 80 })；4) 处理时机：同步(上传时立即处理，简单但慢)、异步(先存原图，队列处理，推荐)、按需(URL 参数实时处理 + CDN 缓存，如 ?w=200)；5) 云服务方案：OSS/COS 自带图片处理(URL 加参数)，不用自己写，中小项目首选；6) EXIF 处理：手机照片带方向信息要自动旋转(sharp 的 rotate())，同时抹掉 GPS 等隐私 EXIF；7) 安全：图片解码是 CPU 密集操作，恶意构造的图片炸弹(解压后几 GB)要限制像素数(sharp 的 limitInputPixels)；8) 动图与 SVG：GIF 处理成本高考虑转视频，SVG 可含脚本要过滤或转 PNG。" },
+      { name: "文件安全校验", desc: "防伪装文件、路径穿越、恶意内容，上传是常见攻击入口。", projectUse: "知识库文档上传的安全线。", mistake: "把 a.php 改名 a.jpg 就能绕过扩展名校验，必须查文件头。", understanding: "1) Magic Number 校验：读文件前几个字节比对真实类型(file-type 库)，扩展名和 Content-Type 都可伪造；2) 路径穿越：文件名含 ../../etc/passwd 时若直接拼路径会写到系统目录，用 UUID 重命名 + path.basename 过滤；3) 双扩展名与空字节：a.jpg.php、a.php%00.jpg 等老攻击，重命名策略天然免疫；4) 存储与执行分离：上传目录绝不允许执行脚本(对象存储天然安全，自建服务器要关目录执行权限)；5) 病毒扫描：高安全场景接 ClamAV 或云端内容安全 API 异步扫描，扫描完成前状态为 pending；6) 内容审核：用户可见的图片/文档接内容安全服务(涉黄涉政识别)，审核不通过标记并通知；7) 解压炸弹：接收 zip 时限制解压后总大小和文件数；8) 访问控制：私有文件的下载 URL 必须校验当前用户权限(最容易出越权的地方——改 URL 里的文件 ID 就能下别人的文件)。" }
+    ]
+  },
+  {
     title: "缓存、队列与性能",
     intro: "解决系统速度、慢任务、限流和成本控制。",
     items: [
@@ -83,6 +131,30 @@ export const backendGroups: KnowledgeGroup[] = [
       { name: "Worker", desc: "后台任务执行者，处理队列任务。", projectUse: "parse-worker、embedding-worker。", mistake: "Worker 需要日志、重试和幂等。", understanding: "1) 单一职责：一个 Worker 只处理一种任务(parse-doc、embedding、send-notification)，便于独立扩缩容；2) 并发控制：配置同时处理的任务数(bull 的 concurrency)，避免 CPU/内存耗尽；3) 失败处理：try-catch 捕获异常、记录错误日志、NACK 重新入队或进入死信；4) 幂等：消费前检查幂等键，相同任务不重复处理；5) 优雅停机：收到 SIGTERM 后停止消费新任务，等待当前任务完成(最多 30s)，超时强制退出；6) 监控指标：任务处理数、成功率、平均耗时、队列积压数；7) 日志：每次任务记录 taskId、开始时间、结束时间、结果、耗时；8) 资源管理：PDF 解析 Worker 要限制并发(内存/CPU 密集)、AI 调用 Worker 要限流；9) 健康检查：定时任务(如每 5 分钟)检查 Worker 是否存活；10) 水平扩展：多实例部署时，每个实例独立消费，通过 Redis 锁防重复。" },
       { name: "重试与死信", desc: "失败任务重试，多次失败进入死信等待人工处理。", projectUse: "PDF 解析失败、AI 接口超时。", mistake: "失败任务不能只打印日志。", understanding: "1) 立即重试：网络抖动(1次)，直接 NACK 重新入队；2) 延迟重试：服务暂时不可用，延迟 5s/30s/5min 后重试；3) 指数退避：1s→2s→4s→8s→16s，避免雪崩；4) 重试次数：配置 maxRetry(如 3-5 次)，超过则放弃；5) 可重试错误：网络超时、5xx 服务器错误、429 限流；6) 不可重试错误：400 参数错误(重试也没用)、401/403 权限错误、404 资源不存在；7) 死信队列(DLQ)：多次失败的任务进入死信，等待人工排查修复；8) 死信处理：人工修复后重新入队、或直接丢弃并告警通知；9) 监控告警：死信数量 > 0 立即告警、定时统计死信分布；10) 补偿机制：死信任务记录详细上下文(参数+错误+重试历史)，便于排查。" },
       { name: "定时任务", desc: "按时间执行统计、清理、同步。", projectUse: "每日客服报表、清理过期日志。", mistake: "定时任务也要有日志和失败告警。", understanding: "1) cron 表达式：0 2 * * * (每天凌晨2点)、*/5 * * * * (每5分钟)、0 0 * * 1 (每周一)；2) Node.js 实现：node-cron(单机)、Bull 定时任务(分布式)；3) 分布式加锁：多实例部署时，用 Redis SETNX 防止重复执行；4) 常见任务：数据统计(日报/周报)、缓存刷新、过期数据清理、数据同步；5) 执行记录：记录 taskId、开始时间、结束时间、结果、耗时；6) 超时控制：任务卡死要能自动终止(如 5 分钟超时)；7) 告警通知：执行失败或超时发企微/钉钉通知；8) 避免：任务间隔 < 执行时间(导致任务堆积)、大量任务同时执行(资源争抢)；9) 依赖检查：任务开始前检查依赖服务是否可用；10) 补偿任务：失败的任务支持手动重跑。" }
+    ]
+  },
+  {
+    title: "后端测试与代码质量",
+    intro: "后端改一行代码可能影响十个接口，没有测试的后端项目不敢重构也不敢升级依赖。",
+    items: [
+      { name: "单元测试", desc: "测试单个函数或 Service 方法的逻辑，快速、稳定、不依赖外部环境。", projectUse: "测试切片函数、价格计算、权限判断逻辑。", mistake: "不要为了覆盖率去测 getter/setter，优先测有分支和边界的业务逻辑。", understanding: "1) 测什么：纯函数(输入→输出)、业务规则(满减计算/状态流转/权限判断)、边界条件(空数组/超长文本/负数)；2) 工具：Vitest(快、TS 原生、推荐新项目)、Jest(生态最大)，API 基本一致(describe/it/expect)；3) AAA 结构：Arrange(准备数据)→Act(调用函数)→Assert(断言结果)，一个测试只验证一件事；4) 好测试的前提是好设计：把业务逻辑写成不依赖 req/res/数据库的纯函数或注入依赖的 Service，天然可测；5) 示例：expect(chunkText(longDoc, { size: 500, overlap: 50 })).toHaveLength(4)；6) 边界用例思维：正常值、空值、临界值(恰好 500 字)、异常值(null/负数)、并发场景；7) 运行时机：本地保存时(watch 模式)、pre-commit、CI 每次提交；8) 覆盖率参考值：核心业务逻辑 80%+，不追求整体 100%(边际收益递减)。" },
+      { name: "接口集成测试", desc: "启动应用真实调用 HTTP 接口，验证路由、中间件、校验、数据库整条链路。", projectUse: "测试 POST /api/knowledge-docs 从鉴权到落库的完整行为。", mistake: "单元测试全过不代表接口能用，中间件顺序、参数解析这些只有集成测试能覆盖。", understanding: "1) 工具：supertest(Express/Koa/Fastify 通用，不用真监听端口)、Next.js 可直接调用 Route Handler 函数或起 dev server 测；2) 测什么：状态码、响应结构(统一格式)、鉴权行为(不带 token 是否 401)、参数校验(缺字段是否 400 且错误信息明确)、业务效果(创建后数据库真的有记录)；3) 示例：await request(app).post('/api/docs').set('Authorization', token).send({ title: 'x' }).expect(201)；4) 数据库策略：用真实数据库(testcontainers 起临时 PostgreSQL 容器)比 mock 数据库可信得多；5) 测试隔离：每个用例前清空相关表或用事务回滚，用例之间不能互相依赖执行顺序；6) 鉴权辅助：写 createTestUser()/getAuthToken() 工具函数，别在每个用例里复制登录逻辑；7) 关键路径优先：登录、核心 CRUD、权限边界(用户 A 访问用户 B 的数据必须 403)；8) 速度控制：集成测试比单测慢，控制在几十个核心场景，全量跑放 CI。" },
+      { name: "测试数据与数据工厂", desc: "系统化地准备测试数据，而不是在每个测试里手写一堆字段。", projectUse: "一行代码造出一个带知识库文档的测试商家。", mistake: "测试数据写死共享会导致用例互相污染，改一个测试挂一片。", understanding: "1) 工厂函数模式：createUser(overrides) 返回默认合法用户对象，测试只覆盖自己关心的字段，如 createUser({ role: 'admin' })；2) 库：@faker-js/faker 生成随机姓名/邮箱/文本，fishery 库做结构化工厂；3) 关联数据：createMerchantWithDocs(3) 一次建好商家+3 个文档，封装常用组合；4) 随机 vs 固定：ID/邮箱随机(防冲突)，参与断言的值固定(如价格 100 断言 95)；5) seed 脚本：本地开发用的演示数据(火锅店知识库)和测试工厂分开维护；6) 数据库清理策略：每用例 truncate 相关表(简单可靠)、事务回滚(最快)、每用例独立 schema(最隔离)；7) 快照时间：测试涉及时间时用 vi.setSystemTime 固定当前时间，避免'昨天写的测试今天挂'；8) 反模式：所有测试共享一个全局 user1，改了 user1 的角色导致不相关测试失败。" },
+      { name: "Mock 外部依赖", desc: "测试时不真调 AI API、短信、支付，用可控的假实现替代。", projectUse: "测试 RAG 流程时 mock 模型返回，不花 token 也不受网络影响。", mistake: "Mock 的返回结构要和真实 API 一致，否则测试全绿上线就炸。", understanding: "1) 为什么 mock：外部服务慢(秒级)、贵(AI 按 token 收费)、不稳定(网络抖动)、有副作用(真发短信)；2) 分层 mock：架构上有 Provider 接口时直接注入 FakeAIProvider(最干净)，没有接口时用 vi.mock() 模块级替换；3) HTTP 层 mock：msw(Mock Service Worker)或 nock 拦截 HTTP 请求，测试代码不用改业务代码；4) mock 数据真实性：录制一次真实响应存成 fixture 文件，mock 返回它，结构不会跑偏；5) 验证调用：expect(mockProvider.chat).toHaveBeenCalledWith(expect.objectContaining({ model: 'agnes-2.0-flash' }))，验证传参正确；6) 失败场景测试：mock 抛超时/限流/500，验证重试和降级逻辑真的生效(这是 mock 最大的价值——真实环境很难复现失败)；7) 契约测试思维：定期跑少量真实 API 的冒烟测试，确保 mock 没和现实脱节；8) 不要 mock 被测对象本身：只 mock 边界(外部服务)，业务逻辑要真跑。" },
+      { name: "E2E 测试与冒烟测试", desc: "从用户视角走完整流程，上线前最后一道防线。", projectUse: "上传文档→等待解析→提问→得到带引用的回答，全链路验证。", mistake: "E2E 又慢又脆，只写关键路径的少量用例，别拿它替代单测。", understanding: "1) 测试金字塔：单元测试(多而快)→集成测试(中)→E2E(少而关键)，比例大约 70/20/10；2) 工具：Playwright(推荐，自动等待、多浏览器、trace 调试)、API 级 E2E 可以只用 supertest 串流程不开浏览器；3) 关键路径选择：注册登录、上传文档到解析完成、发起 AI 对话、权限边界，5-10 条足够；4) 异步流程处理：文档解析是异步的，用轮询等待状态变 ready(带超时)，不要写死 sleep(5000)；5) 冒烟测试：部署后自动跑 2-3 个最核心场景(能登录、能问答)，失败自动回滚或告警；6) 测试环境：独立的 staging 环境 + 测试专用账号，绝不在生产跑写操作的 E2E；7) 稳定性技巧：用 data-testid 定位元素而非文本(文案会改)、失败自动重试一次、保留失败时的截图和 trace；8) CI 集成：PR 跑单测+集成测试(几分钟)，合并主干后跑 E2E(十几分钟)，分级把关。" }
+    ]
+  },
+  {
+    title: "高可用与稳定性",
+    intro: "解决服务挂了怎么办、流量来了怎么扛、发布怎么不影响用户，这是后端和前端思维差异最大的地方。",
+    items: [
+      { name: "无状态设计与水平扩展", desc: "服务本身不存状态，加机器就能扩容，是所有扩展性的前提。", projectUse: "AI 服务从 1 个实例扩到 5 个实例应对高峰。", mistake: "进程内存里存了会话或计数，扩容后用户请求落到不同实例就会出现'时好时坏'的诡异 Bug。", understanding: "1) 无状态含义：任意一个请求发给任意一个实例结果都一样，实例可以随时创建和销毁；2) 状态外置清单：会话→Redis/JWT、缓存→Redis、文件→对象存储、定时任务→分布式锁保证单实例执行、WebSocket 连接映射→Redis；3) 水平 vs 垂直扩展：垂直(换更大的机器)有上限且贵，水平(加机器)近乎无限但要求无状态；4) 典型翻车：内存里的 Map 存验证码，扩到 2 个实例后 50% 概率验证失败——发码和验码落在了不同实例；5) 粘性会话(sticky session)是妥协不是方案：负载均衡把同一用户固定到同一实例，实例挂了用户状态就丢；6) 扩容触发：CPU > 70% 或队列积压时自动加实例(K8s HPA)，AI 服务常按并发请求数扩；7) 数据库是新瓶颈：应用无状态后压力转移到数据库，靠连接池、读写分离、缓存缓解；8) 本地开发验证：docker compose 起 2 个应用实例 + 1 个 Nginx 轮询，跑一遍核心流程就能暴露状态问题。" },
+      { name: "负载均衡与健康检查", desc: "流量分发到多个实例，自动剔除故障实例。", projectUse: "Nginx/云负载均衡后面挂多个 Node 实例。", mistake: "健康检查接口不能只返回 ok，要真实反映依赖(数据库/Redis)是否可用。", understanding: "1) 分发算法：轮询(默认)、加权轮询(机器配置不同)、最少连接(适合长请求如 AI 生成)、IP hash(粘性，尽量避免依赖)；2) Nginx 配置：upstream 块 + proxy_pass，max_fails=3 fail_timeout=30s 自动摘除故障节点；3) 健康检查两类：存活探针(liveness，进程还活着吗，挂了就重启)、就绪探针(readiness，能正常服务吗，没准备好就摘流量)；4) 健康检查接口设计：/health/live 只查进程本身，/health/ready 检查数据库/Redis 连通性(带 1s 超时，检查本身不能拖垮服务)；5) 常见错误：ready 检查里真跑一条业务 SQL 且无超时，数据库慢时健康检查全超时，所有实例被摘除导致全站 502(比数据库慢更糟)；6) 云负载均衡：ALB/CLB 自带健康检查和自动摘除，配置检查路径和阈值即可；7) L4 vs L7：L4(TCP 层)快但不认识 HTTP，L7(HTTP 层)能按路径分发、改 header、做限流；8) 排查思路：部分用户报错时先看是不是某个实例坏了但没被健康检查发现。" },
+      { name: "超时、重试与熔断", desc: "调用下游(数据库/AI API/第三方)的三件套，防止一个慢依赖拖死整个系统。", projectUse: "AI API 偶发 30 秒超时，不加保护会耗尽连接池让所有接口变慢。", mistake: "重试要配合幂等和退避，对非幂等操作盲目重试会造成重复扣费。", understanding: "1) 为什么必须设超时：Node 的 fetch 默认不超时，下游 hang 住时请求堆积→内存涨→连接池耗尽→整个服务不可用，这叫级联故障；2) 超时分层：连接超时(3s)、请求总超时(按接口定：普通查询 5s、AI 生成 60s)、整条链路预算(入口 30s 就不能给下游 60s)；3) 实现：AbortController + setTimeout 包装 fetch，数据库连接池设 connectionTimeout 和 statement_timeout；4) 重试策略：只重试可恢复错误(网络断开/502/503/429)，不重试业务错误(400/401/404)，指数退避 + 抖动(1s→2s→4s ± 随机)，最多 2-3 次；5) 重试与幂等：GET 随便重试，POST 要带幂等键否则可能重复创建；6) 熔断器：连续失败超阈值后'跳闸'，一段时间内直接快速失败不再调用(给下游恢复时间)，半开状态放少量请求探测恢复；7) 库：opossum(Node 熔断器)、p-retry(重试)，或自己用 Redis 计数实现简易熔断；8) 降级配合：熔断期间返回缓存数据、默认回复或'稍后再试'，用户体验降级但不白屏。" },
+      { name: "优雅停机与滚动发布", desc: "发布新版本时用户无感知，正在处理的请求不被掐断。", projectUse: "每天发布多次，AI 对话中的用户不受影响。", mistake: "kill -9 直接杀进程，用户正在生成的 AI 回复直接断掉。", understanding: "1) 优雅停机流程：收到 SIGTERM→健康检查开始返回失败(让负载均衡摘流量)→等几秒让摘除生效→server.close() 停止接新请求→等待存量请求完成(上限 30s)→关闭数据库/Redis 连接→退出；2) 滚动发布：多实例时逐个替换(起新→健康检查通过→摘旧→停旧)，始终有实例在服务；3) K8s 参数：maxSurge(多起几个)、maxUnavailable(最多几个不可用)、preStop sleep 5(等摘流量)、terminationGracePeriodSeconds 60；4) 长连接处理：SSE/WebSocket 停机时发关闭事件让客户端重连到新实例，客户端要有断线重连逻辑；5) 队列 Worker 停机：停止取新任务，处理完当前任务再退出，处理不完的任务靠 ACK 机制回到队列；6) 数据库迁移与发布顺序：先跑兼容性迁移(加列)再发代码，删列要等所有旧代码下线，保证新旧版本代码同时在跑时都能工作；7) 回滚能力：镜像带版本 tag，发现问题一条命令回到上一版本，回滚也走滚动流程；8) 验证方法：压测工具持续发请求的同时做一次发布，错误数应为 0。" },
+      { name: "灰度发布与特性开关", desc: "新功能先放给 1% 用户，有问题影响面可控。", projectUse: "新的 RAG 检索策略先对内部商家开启，验证效果后全量。", mistake: "灰度只看有没有报错不够，要对比核心指标(准确率/延迟/投诉)。", understanding: "1) 灰度发布(金丝雀)：新版本先接 1%-5% 流量，观察错误率/延迟/业务指标，没问题逐步放大到 100%；2) 流量切分维度：按比例(随机 1%)、按用户(内部员工/白名单商家)、按地域、按设备；3) 特性开关(Feature Flag)：代码里 if (flags.newRetrieval(merchantId))，配置中心控制开关和灰度名单，不用发版就能开关功能；4) 开关与发布解耦：代码可以合并上线但功能关闭，'部署'和'发布'分离，减少长期分支冲突；5) 实现：简单场景用 Redis/数据库存开关配置 + 本地缓存，复杂场景用 Unleash/GrowthBook 等开源平台；6) AI 场景特别适用：新 Prompt、新模型、新检索策略都用开关灰度，对比新旧版本的准确率和成本(A/B 测试)；7) 开关清理：功能全量稳定后删掉开关代码，否则代码里堆满死开关；8) 紧急止血：新功能出问题时关开关秒级恢复，比回滚发布快得多。" },
+      { name: "容量评估与压测", desc: "上线前知道系统能扛多少并发，瓶颈在哪。", projectUse: "促销活动前确认 AI 客服能扛住 10 倍日常流量。", mistake: "不要拿本地 Mac 的压测结果推断生产容量，环境差异巨大。", understanding: "1) 关键指标：QPS(每秒请求数)、并发数、P95/P99 延迟、错误率，容量指'错误率和延迟可接受的前提下的最大 QPS'；2) 压测工具：k6(推荐，JS 写脚本)、autocannon(Node 快速压)、JMeter(GUI 老牌)；3) 压测方法：阶梯加压(50→100→200 并发逐级加)，观察延迟拐点——QPS 不再上升而延迟陡增的点就是容量上限；4) 瓶颈定位顺序：先看应用 CPU/内存→数据库(慢查询/连接池等待)→下游 API(AI 接口限流)→带宽；5) AI 服务特殊性：瓶颈常在模型 API 的并发限制和 token 速率，压测要 mock 模型层单独测自己系统，再带真实模型测整体；6) 环境要求：压测环境配置和数据量要接近生产(至少同比例缩放)，压测流量要标记(header)避免污染统计；7) 容量规划公式：预估峰值 QPS × 冗余系数(2-3 倍) ÷ 单实例容量 = 需要的实例数；8) 定期回归：每次大版本后重跑压测基线，性能劣化在上线前发现。" },
+      { name: "故障演练与应急预案", desc: "提前演练'数据库挂了怎么办'，而不是真挂了才现想。", projectUse: "AI API 全面故障时自动降级到'转人工'，用户还能被服务。", mistake: "预案写在文档里没演练过，真出事时发现步骤根本跑不通。", understanding: "1) 故障清单：对系统的每个依赖问一遍'它挂了会怎样'——数据库、Redis、对象存储、AI API、短信、第三方 Webhook；2) 每项依赖回答三个问题：影响什么功能、系统自动怎么处理(降级/熔断/排队)、人工要做什么(切换/扩容/通知)；3) 典型降级设计：Redis 挂→直接查数据库(慢但可用)、AI API 挂→熔断并提示转人工、对象存储挂→上传暂停但浏览不受影响；4) 演练方法：测试环境手动关掉依赖(停 Redis 容器/给 AI API 配错误地址)，验证系统行为符合预期；5) 混沌工程：生产环境随机注入故障(Netflix Chaos Monkey 思路)，中小团队做到定期测试环境演练即可；6) 应急预案文档：故障现象→确认步骤→止血操作(具体命令)→上报路径，放在所有人能找到的地方；7) 事后复盘：每次真实故障写 postmortem(时间线/根因/改进项)，对事不对人；8) 备份恢复演练：定期真的从备份恢复一次数据库到临时环境，验证备份可用——没验证过的备份等于没有备份。" }
     ]
   },
   {
@@ -101,6 +173,11 @@ export const backendGroups: KnowledgeGroup[] = [
       { name: "API 文档", desc: "让前端、后端、AI 工具都知道接口怎么用。", projectUse: "Swagger / OpenAPI、接口示例。", mistake: "接口没文档，AI 编程工具也容易瞎改。", understanding: "1) OpenAPI 规范：JSON/YAML 格式定义接口结构、参数类型、响应格式、错误码；2) Swagger UI：自动生成可交互的文档页面，支持在线测试；3) 文档内容：接口描述、请求参数(query/body/params)、请求示例、响应示例、错误码说明；4) 生成方式：代码注解(Swagger Decorator)自动生成、独立配置文件维护；5) 版本管理：API 版本与文档版本同步，多版本并存；6) 在线测试：Swagger UI 直接测试接口，填参数→发送→看响应；7) AI 友好：AI 编程工具(Copilot/Cursor)读取 OpenAPI 文档理解接口，生成正确调用代码；8) Postman 集成：从 OpenAPI 导入生成 Postman Collection；9) 文档维护：代码变更时同步更新文档，否则文档会过时；10) 安全：生产环境隐藏 Swagger UI，只在测试环境暴露。" }
     ]
   }
+];
+
+export const backendGroups: KnowledgeGroup[] = [
+  ...backendGroupsCore,
+  ...(backendOpsGroups as KnowledgeGroup[])
 ];
 
 export const frontendGroups: KnowledgeGroup[] = [
@@ -223,7 +300,9 @@ export const aiGroups: KnowledgeGroup[] = [
       { name: "Query Rewrite", desc: "改写用户问题以提升检索。", projectUse: "晚上几点关门 改写为 营业时间。", mistake: "改写不能改变用户原意。", understanding: "1) 为什么需要：用户口语化表达(咋退款)与知识库书面表达(退款流程)不匹配；2) 改写方式：同义词替换、问题规范化、补充上下文、拆分复合问题；3) 示例：'咋退款'→'退款流程'、'AI好用吗'→'人工智能产品评价'、'晚上几点关门'→'营业时间'；4) 实现：用 LLM 改写(效果好但慢)、规则匹配(快但覆盖有限)；5) 多查询改写：改写成 2-3 个查询，取并集，提高召回率；6) 限制：改写后必须与原意一致，不能改变用户意图；7) 测试：对比改写前后的检索命中率；8) 缓存：常见问题的改写结果可以缓存。" },
       { name: "Context Compression", desc: "压缩上下文，减少 token 成本。", projectUse: "只保留和问题相关的句子。", mistake: "压缩不能丢掉关键依据。", understanding: "1) 为什么需要：检索到的 chunk 可能包含大量无关内容，浪费 Token；2) 压缩方法：提取关键句、LLM 摘要、滑动窗口截取、关键词高亮；3) 保留原则：与问题相关的句子、包含答案的段落、包含数字/事实的句子；4) 压缩比：原 chunk 1000 Token → 压缩后 200-300 Token(70% 压缩率)；5) 成本权衡：压缩本身消耗 Token，但总成本降低(减少生成模型输入)；6) 引用追溯：压缩后要能追溯到原文位置(保留 offset)；7) 测试：对比压缩前后的回答质量和成本；8) 场景：长文档检索、多 chunk 合并时使用。" },
       { name: "引用来源", desc: "回答必须能追踪到文档和片段。", projectUse: "展示 FAQ.pdf 第 3 段。", mistake: "没有来源，排查和信任都很难。", understanding: "1) 为什么需要：让用户相信回答有依据、便于排查错误、符合合规要求；2) 引用格式：文档名 + 页码/段落 + 原文片段(如 FAQ.pdf 第 3 段)；3) 实现：检索时记录 chunk 的元数据(doc_id, page, offset, heading)；4) 展示：回答中标注[1][2]，底部显示来源列表，点击跳转到原文；5) 可追溯：来源必须可验证，用户能点击查看原文；6) 信任度：引用越多、来源越权威，可信度越高；7) 评估：人工检查引用是否准确(引用的是否真的是答案来源)；8) 缺失处理：无法提供来源的回答要标注'无法验证'。" },
-      { name: "拒答策略", desc: "知识库无答案时不能编。", projectUse: "低相似度转人工。", mistake: "客服场景宁可拒答，也不能乱答。", understanding: "1) 为什么拒答：防止幻觉，客服场景幻觉成本高(错误价格/政策)；2) 判断依据：检索相似度 < 阈值(如 0.6)、LLM 输出置信度低；3) 拒答话术：'抱歉，我暂时无法回答这个问题，已为您转接人工客服'；4) 转人工流程：自动创建工单、记录问题和上下文、通知客服；5) 缺口分析：收集拒答问题，分析为什么检索不到，补充知识库；6) 评估指标：拒答率(不能太高影响体验)、拒答准确率(该拒的必须拒)；7) 监控：每日统计拒答问题类型，识别知识库缺口；8) 迭代：拒答问题定期人工审核，转化为知识库内容。" }
+      { name: "拒答策略", desc: "知识库无答案时不能编。", projectUse: "低相似度转人工。", mistake: "客服场景宁可拒答，也不能乱答。", understanding: "1) 为什么拒答：防止幻觉，客服场景幻觉成本高(错误价格/政策)；2) 判断依据：检索相似度 < 阈值(如 0.6)、LLM 输出置信度低；3) 拒答话术：'抱歉，我暂时无法回答这个问题，已为您转接人工客服'；4) 转人工流程：自动创建工单、记录问题和上下文、通知客服；5) 缺口分析：收集拒答问题，分析为什么检索不到，补充知识库；6) 评估指标：拒答率(不能太高影响体验)、拒答准确率(该拒的必须拒)；7) 监控：每日统计拒答问题类型，识别知识库缺口；8) 迭代：拒答问题定期人工审核，转化为知识库内容。" },
+      { name: "LLM Wiki (知识编译)", desc: "Karpathy 2026 年提出的新范式：不在查询时检索原始文档，而是让 LLM 持续构建和维护一个结构化的 Markdown 维基。", projectUse: "让 Agent 把学到的项目知识沉淀成 Wiki，一次学习、永久可用。", mistake: "LLM Wiki 不是 RAG 的替代品，而是把'检索时理解'前移到'摄入时编译'，两者可以配合。", understanding: "1) 核心思想：传统 RAG 是'查询时从原始文档检索'，LLM Wiki 是'摄入时就让 LLM 把资料编译成结构化、相互链接的 Markdown 页面集合'，回答时直接读编译好的知识；2) 类比编程：RAG 像解释执行(每次现场理解原文)，LLM Wiki 像编译执行(提前编译成机器友好的形式)，所以被称为'知识编译(Knowledge Compilation)'；3) 起源：Andrej Karpathy(OpenAI 联合创始人)2026 年 4 月开源 LLM-Wiki 项目，核心就是一套指导 Agent 更新和组织知识的规则；4) 工作流：新资料进来→LLM 判断该更新哪些页面→合并进已有页面或新建页面→维护页面间的双向链接→知识随时间'复利增长'；5) 解决的痛点：RAG 每次检索都重新理解原文(重复劳动)、切片丢失全局结构、知识不会随使用而变好；6) Skill 泛化：LLM Wiki 把 Skill 从固定的 SKILL.md 泛化为'任何带清晰元数据的 Markdown 知识'，Agent 按场景自主调用；7) 适用规模：极简透明(纯 Markdown 文件)，适合个人和百级页面的小团队知识库；8) 局限：规模大了以后纯文件遍历慢、缺乏工程化的检索层——这正是 GBrain 要解决的问题。" },
+      { name: "GBrain (Agent 记忆大脑)", desc: "YC CEO Garry Tan 开源的 Agent 长期记忆系统：Markdown 脑仓 + 混合检索 + 零 LLM 知识图谱。", projectUse: "给 Agent 装上跨会话的持久记忆，记住用户、项目和历史决策。", mistake: "GBrain 不是又一个向量库套壳，它的核心是'把过去编译成当前最可信的知识状态'，而不是'把过去存起来'。", understanding: "1) 是什么：Garry Tan(Y Combinator CEO)2026 年 4 月开源(MIT 协议)的 Agent 记忆层，是 LLM Wiki 理念的完整工程化实现，他本人日常真实使用(1 万+ Markdown 页面、13 年日历数据、20+ 常驻 cron 任务)；2) 三层架构：可读的 Markdown 脑仓(人类可编辑)→Postgres/PGLite 索引层(机器可检索)→Agent/Skill/Cron 执行系统(持续写入和修正)；3) 双层页面结构：每个页面分 compiled_truth(编译真相，当前最可信的综合摘要)和 timeline(时间线证据，历史记录和原始来源)，回答时优先给真相、需要时给证据；4) 混合检索：向量搜索 + BM25 全文匹配 + RRF 融合排序 + 知识图谱遍历，BrainBench 评测显示纯向量 RAG 的 P@5 约 18%，完整栈达到 49.1%——证明'向量相似不等于事实相关'；5) 零 LLM 知识图谱：靠正则匹配 wikilink 和关系动词自动抽取实体和关系(works_at/founded 等)，图谱在每次写入时自动生长而不烧 token，反向链接强制维护；6) 渐进式披露：先用混合搜索确认相关片段(约 2KB)，确认相关再加载整页，避免上下文浪费；7) Agent 接入：通过 MCP 协议接入 Claude Code 等工具(gbrain init 后 claude mcp add gbrain 即可)，多 Agent 可同时读写；8) 与本页其他概念的关系：RAG 管'外部知识文档'，Fact-Graph Memory/GBrain 管'Agent 自己的经历和事实'，LLM Wiki 是方法论、GBrain 是开箱即用的实现。" }
     ]
   },
   {
@@ -242,6 +321,157 @@ export const aiGroups: KnowledgeGroup[] = [
       { name: "Handoff", desc: "AI 无法处理时转人工。", projectUse: "投诉、低置信度、敏感问题。", mistake: "没有人工兜底的客服 AI 不稳。", understanding: "1) 触发条件：AI 拒答(低相似度)、用户明确要求、投诉类问题、敏感问题(退款/法律)；2) 转人工流程：AI 判断需要转人工→创建工单(记录问题/上下文)→通知客服(企微/短信)→客服接管对话；3) 上下文传递：把对话历史、用户信息、AI 分析结果(已收集信息/问题分类)传给客服；4) 实现：创建 handoff 记录，更新会话状态为 'waiting_human'；5) 通知方式：企微消息(实时)、浏览器通知、短信(紧急)；6) 回到 AI：客服处理完可以让用户继续与 AI 对话(状态切回 'ai_active')；7) 评估指标：转人工率(越低越好)、转人工后解决率、用户满意度；8) 优化方向：分析转人工原因，补充知识库/优化 Prompt，降低转人工率。" },
       { name: "工具调用日志", desc: "记录 AI 调用了什么、参数、结果、耗时。", projectUse: "tool_call_logs。", mistake: "没有日志无法审计 AI 的动作。", understanding: "1) 记录内容：工具名(getOrderStatus)、参数({orderId: 'xxx'})、返回结果({status: 'shipped'})、耗时(150ms)、成功/失败；2) 关联信息：requestId(链路追踪)、userId(操作人)、sessionId(会话)、merchantId(商家)；3) 存储：tool_call_logs 表，保留 90 天(可配置)；4) 查询维度：按工具名、按用户、按时间范围、按成功/失败筛选；5) 审计要求：敏感操作(退款/删除)的日志不可删除，保留更长(如 1 年)；6) 监控指标：工具调用成功率、平均耗时、失败原因分布；7) 排查流程：用户投诉→查 requestId→查工具调用日志→分析参数和结果；8) 告警：工具调用失败率 > 10% 立即告警。" },
       { name: "防止过度自主", desc: "Agent 不应无限循环或越权行动。", projectUse: "限制最大步数、工具白名单。", mistake: "Agent 越自主，越需要边界。", understanding: "1) 最大步数：限制一次任务最多调用工具 N 次(如 10 次)，超过强制停止；2) 工具白名单：只能调用预定义的工具(如 getOrderStatus/createTicket)，不能调用危险工具(如 deleteAll/refund)；3) 参数校验：防止注入攻击(SQL 注入/命令注入)、越权访问(只能查自己的订单)；4) 循环检测：相同工具+相同参数连续调用 3 次则停止(防止死循环)；5) 成本控制：每次工具调用都消耗 Token，设置单次任务 Token 上限；6) 人工兜底：超过限制或检测到异常时自动转人工；7) 审计日志：记录 Agent 的每一步决策(选择工具/参数/结果)，便于事后审计；8) 超时机制：单次任务总耗时超过 5 分钟强制停止。" }
+    ]
+  },
+  {
+    title: "AI 面试高频考点 (2026)",
+    intro: "外面 AI 应用岗最常问的落地题：MCP、Context Engineering、召回排查、评测闭环。每题都带面试答法，配合上方知识卡片的「自测」使用。",
+    items: [
+      {
+        name: "MCP 协议",
+        desc: "Model Context Protocol，让 AI 以统一方式连接外部工具和数据源。",
+        oneLine: "AI 的 USB 接口：一次适配，多处复用工具。",
+        projectUse: "Claude/Cursor 接数据库、Git、内部 API，不用每个工具写一套集成。",
+        mistake: "MCP 不是 Function Calling 的替代品，是工具层的标准化协议。",
+        analogy: "Function Calling 是'我想用锤子'；MCP 是'整个工具箱的插口标准'，换 Agent 不用重接电线。",
+        keyPoints: [
+          "Function Calling：单次对话里模型选工具+参数",
+          "MCP：独立 Server 暴露 tools/resources，Agent 通过协议发现和调用",
+          "生产要做鉴权、限流、审计，MCP Server 视同 API",
+          "2026 大厂 JD 常写 MCP，和 Agent 工程强绑定"
+        ],
+        interviewQA: {
+          question: "MCP 和 Function Calling 有什么区别？",
+          answer: "Function Calling 是模型 API 层面的工具调用能力，一次请求内完成；MCP 是开放协议，把工具/数据封装成标准 Server，多个 Agent 客户端可复用。工程上 FC 适合应用内嵌工具，MCP 适合跨应用、可治理的工具生态。"
+        },
+        memoryTip: "FC=单次调用能力，MCP=工具生态标准"
+      },
+      {
+        name: "Context Engineering",
+        desc: "设计模型看到的全部上下文，而不只是写一句 Prompt。",
+        oneLine: "Prompt 是台词，Context Engineering 是整场布景。",
+        projectUse: "RAG 片段、历史消息、工具结果、System 规则、用户画像的组装与裁剪。",
+        mistake: "以为 Prompt 写长就能解决，忽视检索质量和上下文预算。",
+        keyPoints: [
+          "包含：System 规则、检索结果、工具输出、对话历史、输出 Schema",
+          "按任务分配 Token 预算，重要的放前面和后面",
+          "和 Prompt Engineering 区别：PE 写指令，CE 管整个输入管道",
+          "面试常问：召回差是 CE 问题，不是多写两句 System"
+        ],
+        interviewQA: {
+          question: "Prompt Engineering 和 Context Engineering 区别？",
+          answer: "PE 关注怎么写指令；CE 关注模型最终看到什么——检索哪些 chunk、保留多少历史、工具结果怎么塞、哪些 metadata 过滤。RAG 落地 80% 的问题在上下文构建，不在 Prompt 措辞。"
+        },
+        memoryTip: "PE 写话，CE 搭台"
+      },
+      {
+        name: "RAG 召回排查",
+        desc: "检索命中率低时，按链路分段定位而不是盲目调 Prompt。",
+        oneLine: "召回差先查切片和向量，再查排序，最后才怪模型。",
+        projectUse: "客服回答偏了，先查 TopK 里有没有正确 chunk。",
+        mistake: "没看检索结果就直接改 Prompt，治标不治本。",
+        keyPoints: [
+          "第一步：人工看 Top5 检索结果有没有答案",
+          "没有→查切片(太大/太小)、清洗、Embedding 模型、Query Rewrite",
+          "有但排序靠后→上 Hybrid Search + Rerank",
+          "有且排序靠前但答错→才是 Prompt/生成问题"
+        ],
+        interviewQA: {
+          question: "RAG 召回率低怎么排查？",
+          answer: "按链路：文档解析是否丢内容→切片是否合理→Embedding 模型是否匹配语种→是否缺 Hybrid/Rerank→Metadata 过滤是否误杀→Query 是否需要改写。每段用固定评估集验证，不要跳步。"
+        },
+        memoryTip: "解析→切片→向量→过滤→排序→生成，逐级排除"
+      },
+      {
+        name: "LangGraph / Agent 编排",
+        desc: "用状态图管理 Agent 多步流程，比自由 Loop 更可控。",
+        oneLine: "Agent 的导航地图：节点是步骤，边是流转条件。",
+        projectUse: "客服投诉：分类→收集信息→查政策→建工单→转人工。",
+        mistake: "把所有逻辑塞进一个自由 Agent，调试和上线都难。",
+        keyPoints: [
+          "节点=处理步骤，边=条件分支，状态=共享上下文",
+          "支持中断、人工介入、断点恢复",
+          "比 CrewAI 更偏工程，比纯 ReAct 更可观测",
+          "面试说清：状态存在哪、谁负责流转、失败怎么回滚"
+        ],
+        interviewQA: {
+          question: "生产环境 Agent 为什么常用 LangGraph 而不是纯 ReAct？",
+          answer: "纯 ReAct 灵活但不可预测，难调试。LangGraph 用显式状态机定义步骤和分支，支持持久化状态、人工审批节点、失败重试，更适合客服、审批等需要可观测和合规的场景。"
+        },
+        memoryTip: "ReAct 自由探索，LangGraph 有轨运行"
+      },
+      {
+        name: "RAGAS / AI 评测",
+        desc: "用指标量化 RAG 和 Agent 质量，支撑上线和回归。",
+        oneLine: "没有评测集的 AI 功能，上线等于赌博。",
+        projectUse: "改 Prompt 或切片策略前，跑一遍黄金集对比指标。",
+        mistake: "只看几条 demo 觉得还行就上线。",
+        keyPoints: [
+          "检索：命中率、MRR、上下文相关性",
+          "生成：忠实度(是否胡编)、答案相关性",
+          "Agent：工具选择准确率、任务完成率",
+          "固定 50-100 条黄金集，CI 门禁拦截退化"
+        ],
+        interviewQA: {
+          question: "如何评估一个 RAG 系统效果？",
+          answer: "构建覆盖真实业务的黄金问题集，指标分检索(命中率、TopK 是否含答案)和生成(准确率、幻觉率、拒答率)。每次改切片/Prompt/模型都跑回归，设定门禁如命中率>85%、幻觉<5%。"
+        },
+        memoryTip: "黄金集 + 指标 + 回归，三板斧"
+      },
+      {
+        name: "模型网关",
+        desc: "统一接入多家模型，做路由、限流、熔断、计费。",
+        oneLine: "所有模型调用走一个大门，方便管钱、管稳定。",
+        projectUse: "按任务路由到便宜/贵模型，统一记 Token 和错误率。",
+        mistake: "业务代码直接散落调用 OpenAI/Claude，换供应商要改遍全项目。",
+        keyPoints: [
+          "能力：路由、限流、重试、熔断、日志、成本统计",
+          "对接 AIProvider 抽象，业务不感知供应商",
+          "面试系统设计常考：多模型、多租户、高并发",
+          "和 API Gateway 类似，专用于 LLM"
+        ],
+        interviewQA: {
+          question: "生产级 AI 应用为什么要模型网关？",
+          answer: "统一鉴权和密钥管理；按任务/租户路由不同模型；集中限流熔断防成本失控和级联故障；统一记录 Token、延迟、错误率用于 SLA 和计费。换模型只改网关配置。"
+        },
+        memoryTip: "网关=模型版的 API 网关"
+      },
+      {
+        name: "Harness Engineering",
+        desc: "用代码骨架约束模型行为，而不是全靠 Prompt 碰运气。",
+        oneLine: "Prompt 是建议，Harness 是法律。",
+        projectUse: "Zod 校验输出、固定流程状态机、工具白名单、评估 CI 门禁。",
+        mistake: "以为换个更强模型就能解决所有不稳定。",
+        keyPoints: [
+          "结构化输出强制 Schema",
+          "工具调用后端硬校验权限",
+          "Workflow 限制 Agent 自由度",
+          "评测集做回归，改动必须过门禁"
+        ],
+        interviewQA: {
+          question: "什么是 Harness Engineering？为什么面试爱问？",
+          answer: "指用工程手段（Schema 校验、状态机、权限、评测、可观测）约束 LLM 的不确定性，而不是堆 Prompt。体现你能做生产级 AI 应用，而非只会调 API。面试结合你做过的 RAG/Agent 项目讲具体 Harness 措施。"
+        },
+        memoryTip: "模型会飘，Harness 把它拴住"
+      },
+      {
+        name: "Prompt Caching",
+        desc: "缓存重复的 System Prompt 和长上下文前缀，降成本降延迟。",
+        oneLine: "同样前缀不重复算钱，长 System Prompt 必开。",
+        projectUse: "客服 System Prompt+知识库模板固定，多用户复用缓存。",
+        mistake: "把每次变化的检索结果放在 Prompt 最前面，导致缓存失效。",
+        keyPoints: [
+          "静态内容放前面：System、工具定义、固定模板",
+          "动态内容放后面：检索结果、用户问题",
+          "OpenAI/Anthropic 均支持前缀缓存",
+          "可省 50-90% 输入 Token 费用"
+        ],
+        interviewQA: {
+          question: "Prompt Caching 怎么用才有效？",
+          answer: "把稳定不变的前缀（System、工具 Schema、固定指令）放上下文最前并保持一致，动态检索和用户输入放后面。前缀一致则缓存命中，显著降低首 Token 延迟和输入成本。"
+        },
+        memoryTip: "静前动后，缓存才命中"
+      }
     ]
   },
   {
@@ -404,23 +634,33 @@ export const learningTasks = [
   "作品介绍：写项目亮点。",
   "复盘卡点：列出下一阶段最需要补的 3 个点。",
   "是否买课判断：根据卡点决定是否买专项课。",
-  "Agentic RL：用 LangGraph 搭建一个 Agent 模拟环境，观察多步决策轨迹。",
-  "Fact-Graph Memory：设计一个从对话中提取事实并存入图数据库的流程。",
-  "World Model：用 LLM 模拟一个'如果用户执行X操作会怎样'的规划模块。",
-  "模型专业化：对比通用模型和代码专用模型在同一编程任务上的表现。",
-  "Intent-Driven Guardrails：准备 10 条意图攻击样本，测试关键词过滤 vs 意图分析的拦截率。",
-  "端侧 AI：用 Ollama 在本地部署 7B 模型，测试问答和代码补全效果。",
-  "KV Cache 压缩：用 vLLM 部署长上下文模型，对比压缩前后的显存占用和延迟。",
-  "AI for Science：用 Claude Science 或类似工具完成一次文献综述 + 数据分析。",
-  "Multi-Agent Orchestration：用 LangGraph 设计一个多 Agent 客服系统，含状态同步和故障恢复。",
-  "AI Coding Agent：用 Claude Code 自主修复一个中等难度 Bug，记录完整流程。",
-  "实时语音 AI：对比传统 ASR→LLM→TTS 和端到端语音模型的延迟差异。",
-  "Agent 安全总检查：设计一套完整的 Agent 安全护栏方案(输入→推理→输出→权限→审计)。"
+  "面试闪卡：后端+AI 各抽 5 道题自测，不会的记入错题。",
+  "MCP vs Function Calling：用自己的话讲清区别并举例。",
+  "Context Engineering：画一张上下文组装示意图。",
+  "RAG 召回排查：拿 3 个答错案例走完整排查链路。",
+  "LangGraph 状态机：设计投诉处理 5 个节点和流转条件。",
+  "黄金评估集：整理 30 条问题并标注预期行为。",
+  "模型网关：列出路由、限流、熔断、计费 4 个职责。",
+  "Harness 清单：列出你项目里 5 条约束模型的工程措施。",
+  "模拟面试：限时 30 秒回答「RAG 怎么优化检索」。",
+  "模拟面试：限时 30 秒回答「Agent 工具调用怎么保证安全」。",
+  "模拟面试：用 STAR 讲一个你解决过的技术难点（可虚构练习）。",
+  "SSH：写下登录云主机并用 ss/journalctl 排障的步骤清单。",
+  "安全组：画出 80/443/22/5432 该对谁开放的示意图。",
+  "DNS + HTTPS：说明域名 A 记录到 Nginx 再反代 Node 的完整链路。",
+  "Dockerfile：指挥 AI 写多阶段构建，并自己讲清每段在干什么。",
+  "docker compose：本地一键起 app + postgres + redis，验证健康检查。",
+  "Nginx：配置反代、上传大小、SSE 关缓冲，并用 curl 验证。",
+  "部署选型：对比 Vercel / 云主机 Docker / K8s，写清你的项目选哪个及原因。",
+  "发布回滚：写一份发版 checklist（迁移顺序、健康检查、回滚 tag）。",
+  "指挥 AI：用「契约→分层→非功能→验收」四步让 AI 实现一个限流接口。",
+  "术语闪卡：在术语库抽 20 个部署/架构词，合上能讲出一句话定义。"
 ];
 
 export const glossary = [
   ...backendGroups.flatMap(group => group.items.map(item => ({ term: item.name, desc: item.desc + " 项目中：" + item.projectUse }))),
   ...aiGroups.flatMap(group => group.items.map(item => ({ term: item.name, desc: item.desc + " 项目中：" + item.projectUse }))),
+  ...backendOpsGlossary,
   { term: "多租户", desc: "一套系统服务多个商家或组织，关键是数据、权限、配置隔离。" },
   { term: "状态机", desc: "把业务对象的状态和可执行动作定义清楚，例如 waiting_parse -> processing -> success/failed。" },
   { term: "死信队列", desc: "多次处理失败的任务进入死信，等待人工处理或后续排查。" },
@@ -457,13 +697,20 @@ export const resources: Resource[] = [
   { name: "PostgreSQL Docs", url: "https://www.postgresql.org/docs/current/", category: "后端" },
   { name: "Prisma 文档", url: "https://www.prisma.io/docs", category: "后端", note: "Node.js 生态最常用的 ORM，类型安全" },
   { name: "Redis Docs", url: "https://redis.io/docs/latest/", category: "后端" },
-  { name: "Docker Docs", url: "https://docs.docker.com/get-started/", category: "部署运维" },
-  { name: "Nginx Docs", url: "https://nginx.org/en/docs/", category: "部署运维" },
+  { name: "Docker Docs", url: "https://docs.docker.com/get-started/", category: "部署运维", note: "镜像、容器、compose 入门" },
+  { name: "Nginx Docs", url: "https://nginx.org/en/docs/", category: "部署运维", note: "反代、upstream、SSL 配置参考" },
+  { name: "Let's Encrypt / Certbot", url: "https://certbot.eff.org/", category: "部署运维", note: "免费 HTTPS 证书与自动续期" },
+  { name: "GitHub Actions 文档", url: "https://docs.github.com/actions", category: "部署运维", note: "最常用的 CI/CD 入门" },
+  { name: "Kubernetes 概念（中文）", url: "https://kubernetes.io/zh-cn/docs/concepts/", category: "部署运维", note: "先懂 Pod/Deployment/Service/Ingress 即可" },
+  { name: "十二要素应用", url: "https://12factor.net/zh_cn/", category: "部署运维", note: "配置、日志、无状态等现代部署心智" },
+  { name: "Linux 命令速查", url: "https://wangchujiang.com/linux-command/", category: "部署运维", note: "ss、journalctl、chmod 等运维命令" },
   { name: "OWASP API Security", url: "https://owasp.org/API-Security/editions/2023/en/0x11-t10/", category: "安全", note: "API 安全十大风险，做后端必读" },
   { name: "OpenAI 开发文档", url: "https://platform.openai.com/docs", category: "AI 应用", note: "模型调用、结构化输出、工具调用的官方参考" },
   { name: "Anthropic (Claude) 文档", url: "https://docs.anthropic.com/", category: "AI 应用", note: "Tool Use、Prompt 工程指南写得非常好" },
   { name: "Vercel AI SDK", url: "https://sdk.vercel.ai/docs", category: "AI 应用", note: "Next.js 项目里做流式对话最顺手的 SDK" },
   { name: "LangGraph 文档", url: "https://langchain-ai.github.io/langgraph/", category: "AI 应用", note: "Agent 编排与状态管理框架" },
   { name: "pgvector", url: "https://github.com/pgvector/pgvector", category: "AI 应用", note: "PostgreSQL 向量扩展，RAG 入门首选" },
-  { name: "OpenAI Cookbook", url: "https://cookbook.openai.com/", category: "AI 应用", note: "大量可直接跑的示例代码" }
+  { name: "OpenAI Cookbook", url: "https://cookbook.openai.com/", category: "AI 应用", note: "大量可直接跑的示例代码" },
+  { name: "LLM-Wiki (Karpathy)", url: "https://github.com/karpathy/llm-wiki", category: "AI 应用", note: "知识编译范式的开山项目，README 就是精华" },
+  { name: "GBrain (Garry Tan)", url: "https://github.com/garrytan/gbrain", category: "AI 应用", note: "Agent 长期记忆的完整开源实现，可通过 MCP 接入" }
 ];
