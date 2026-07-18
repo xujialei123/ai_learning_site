@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Hero, KnowledgeGroupView, Section } from "@/components/Blocks";
 import { backendGroups } from "@/data/content";
 
@@ -16,6 +17,14 @@ export default function BackendPage() {
           <li><b>面试 tab 背答法</b>：对外面试用 30 秒结构化回答，不要背长文。</li>
           <li><b>术语库随时查</b>：遇到 SSH、upstream、幂等、熔断等词，去「术语库」搜；指挥 AI 时把准确名词写进指令。</li>
         </ol>
+      </Section>
+
+      <Section title="想动手做完整项目？">
+        <p>
+          打开{" "}
+          <Link href="/tutorial">后端实战教程</Link>
+          ：从零搭建「智问」多租户 AI 知识库客服，按天打卡，把本页技术在一个仓库里全部用上。
+        </p>
       </Section>
 
       <Section title="指挥 AI 时怎么说话（超实用）">

@@ -26,6 +26,7 @@ const groups: Array<{ title: string; links: Array<[string, string]> }> = [
   {
     title: "练习与自测",
     links: [
+      ["/tutorial", "后端实战教程"],
       ["/pitfalls", "真实项目踩坑集"],
       ["/demos", "练习 Demo 实验室"],
       ["/tasks", "任务制学习计划"],

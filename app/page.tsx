@@ -32,6 +32,7 @@ const stages = [
     stage: "第四阶段 · 动手与自测",
     goal: "边练边学，用打卡和面试题检验自己",
     links: [
+      { href: "/tutorial", label: "后端实战教程", desc: "从零搭建多租户 AI 知识库，技术点全覆盖可打卡" },
       { href: "/pitfalls", label: "真实项目踩坑集", desc: "看事故现场推根因，训练判断力" },
       { href: "/demos", label: "练习 Demo 实验室", desc: "交互式 Demo，动手理解概念" },
       { href: "/tasks", label: "任务制学习计划", desc: "每天一个任务，支持打卡记录进度" },

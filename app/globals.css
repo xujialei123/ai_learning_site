@@ -407,6 +407,125 @@ a { color: inherit; }
 }
 .flashStats b { color: var(--text); }
 
+/* ---------- Backend tutorial ---------- */
+.tutList {
+  margin: 8px 0 0;
+  padding-left: 1.2em;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.tutList li { margin-bottom: 4px; }
+.tutPhaseNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tutPhaseBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  max-width: 220px;
+}
+.tutPhaseBtn:hover { border-color: var(--primary-border); background: var(--primary-weak); }
+.tutPhaseBtn.active {
+  border-color: var(--primary);
+  background: var(--primary-weak);
+  box-shadow: inset 0 0 0 1px var(--primary-border);
+}
+.tutPhaseTitle { font-size: 13px; font-weight: 700; line-height: 1.35; }
+.tutPhaseMeta { font-size: 12px; color: var(--muted); }
+.tutPhaseHead h3 { margin: 0 0 6px; font-size: 18px; }
+.tutPhaseHead p { margin: 0 0 12px; color: var(--muted); }
+.tutStepList { display: grid; gap: 16px; margin-top: 16px; }
+.tutStep {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 18px;
+}
+.tutStep.done {
+  border-color: #bbf7d0;
+  background: linear-gradient(0deg, var(--green-weak), #fff 40%);
+}
+.tutStepHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.tutStepHead h3 { margin: 8px 0 6px; font-size: 17px; }
+.tutGoal { margin: 0; color: var(--muted); font-size: 14px; }
+.tutCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tutBlock { margin-top: 14px; }
+.tutBlock > b {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+.tutBlock p { margin: 0; font-size: 14px; color: var(--muted); }
+.tutBlock ol, .tutBlock ul {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.tutBlock li { margin-bottom: 4px; }
+.tutTags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tutPromptBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.tutTechTable {
+  display: grid;
+  gap: 8px;
+}
+.tutTechRow {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.2fr) 1.5fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.tutTechName { font-size: 14px; font-weight: 600; }
+.tutTechSteps { display: flex; flex-wrap: wrap; gap: 6px; }
+.tutJump {
+  cursor: pointer;
+  border: 0;
+  font: inherit;
+}
+.tutJump.ok { background: var(--green-weak); color: #166534; }
+@media (max-width: 720px) {
+  .tutTechRow { grid-template-columns: 1fr; }
+  .tutStepHead { flex-direction: column; }
+}
+
 /* ---------- AI tools page ---------- */
 .toolList { display: grid; gap: 12px; }
 .toolCard {
