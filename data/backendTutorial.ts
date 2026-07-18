@@ -120,13 +120,13 @@ export const tutorialPhases: TutorialPhase[] = [
         techs: ["Docker", "docker compose", "PostgreSQL", "Redis", "Volume"],
         study: "后端 → Docker 与容器化；数据与存储；Linux 基础",
         todos: [
-          "写 docker-compose.yml：postgres:16、redis:7、健康检查",
+          "写 docker-compose.yml：postgres:17、redis:7、健康检查",
           "挂卷持久化 PG 数据",
           "把 DATABASE_URL / REDIS_URL 写进 .env.local",
           "验证：docker compose ps、redis-cli ping、psql 能连"
         ],
         files: ["docker-compose.yml", ".dockerignore"],
-        aiPrompt: `请写 docker-compose.yml：服务 postgres(16) + redis(7)，
+        aiPrompt: `请写 docker-compose.yml：服务 postgres(17) + redis(7)，
 含 healthcheck、volume、端口 5432/6379，以及给 Next 用的 DATABASE_URL/REDIS_URL 示例。
 说明 Windows/Mac 如何启动与排障（端口占用）。`,
         accept: [
@@ -248,7 +248,7 @@ Membership(userId, merchantId, role: OWNER|ADMIN|AGENT，联合唯一)。
           "app/api/auth/register/route.ts",
           "app/api/auth/login/route.ts"
         ],
-        aiPrompt: `实现 register/login API：bcrypt cost 10；JWT(HS256) 含 sub/email/exp；
+        aiPrompt: `实现 register/login API：bcrypt cost 12（贴合 2026 OWASP 建议，也可用 argon2id）；JWT(HS256) 含 sub/email/exp；
 统一错误不暴露用户是否存在；返回 { accessToken, user }。
 给前端最小登录页字段说明。`,
         accept: [
@@ -700,7 +700,7 @@ HEALTHCHECK 打 /api/health/ready。`,
           "复盘：列出下一版 3 个改进（Hybrid、Rerank、真正 OSS）"
         ],
         files: [".github/workflows/ci.yml", "docs/DEMO_SCRIPT.md"],
-        aiPrompt: `写 GitHub Actions：node 20、启动 postgres/redis service、npm test。
+        aiPrompt: `写 GitHub Actions：node 22（2026 Active LTS）、启动 postgres/redis service、npm test。
 再写 DEMO_SCRIPT.md：3 分钟演示台词（注册→上传→提问→限流→跨租户 403）。
 最后给「作品集介绍」一段话（STAR）。`,
         accept: [

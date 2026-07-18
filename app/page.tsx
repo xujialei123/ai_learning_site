@@ -24,6 +24,7 @@ const stages = [
     goal: "从零基础概念到 RAG、Agent、评估、护栏、前沿方向",
     links: [
       { href: "/ai", label: "AI 应用知识体系", desc: "含零基础入门篇和 2026 前沿篇" },
+      { href: "/ai-coding", label: "操作与指挥指南", desc: "快捷键、指令模板、场景剧本、规则文件" },
       { href: "/ai-tools", label: "AI 编程工具教程", desc: "Claude Code、Codex、Cursor 及国产工具上手" },
       { href: "/features", label: "功能到技术栈映射", desc: "学会从一个功能反推需要哪些技术" }
     ]

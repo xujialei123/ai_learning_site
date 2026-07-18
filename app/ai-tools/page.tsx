@@ -1,4 +1,5 @@
 
+import Link from "next/link";
 import { Hero, Section } from "@/components/Blocks";
 import { overseasTools, domesticTools, usageGuides, type AiTool } from "@/data/aiTools";
 
@@ -53,8 +54,15 @@ export default function AiToolsPage() {
     <>
       <Hero
         title="AI 编程工具教程"
-        desc="Claude Code、Codex、Cursor 以及国内主流 AI 编程工具的上手教程、核心用法和选型建议。工具会一直变，但「怎么和 AI 协作写代码」的方法是通用的。"
+        desc="Claude Code、Codex、Cursor 以及国内主流 AI 编程工具的上手教程、核心用法和选型建议。想学「怎么下指令、快捷键、场景剧本」请看操作与指挥指南。"
       />
+
+      <Section title="相关：操作与指挥">
+        <div className="callout good">
+          快捷键、五段式指令、修 Bug / 加接口等场景剧本、规则文件写法 → 打开{" "}
+          <Link href="/ai-coding">操作与指挥指南</Link>。本页专注工具介绍与选型。
+        </div>
+      </Section>
 
       <Section title="先分清三种形态">
         <div className="grid three">

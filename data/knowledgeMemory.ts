@@ -191,7 +191,7 @@ export const knowledgeMemoryPatches: Record<string, Partial<KnowledgeItem>> = {
     oneLine: "把文字变成数字向量，语义相近的距离就近。",
     keyPoints: [
       "只用于检索相似内容，不负责生成答案",
-      "中文常用 bge-large-zh，英文 OpenAI embedding",
+      "中文/多语种常用 bge-m3、bge-large-zh-v1.5 或 Qwen3-Embedding，英文用 OpenAI text-embedding-3-large",
       "相同文本可缓存向量，模型升级要重算",
       "和 pgvector/Pinecone 配合做 ANN 搜索"
     ],
@@ -220,7 +220,7 @@ export const knowledgeMemoryPatches: Record<string, Partial<KnowledgeItem>> = {
     keyPoints: [
       "向量召回快但不准，Rerank 慢但准",
       "流程：召回 Top20-50 → Rerank → 取 Top3-5 给 LLM",
-      "BGE-Reranker / Cohere Rerank 常用",
+      "bge-reranker-v2-m3 / Cohere Rerank 3 / Jina Reranker 常用",
       "延迟 +100-500ms，命中率可提升 20-30%"
     ],
     interviewQA: {

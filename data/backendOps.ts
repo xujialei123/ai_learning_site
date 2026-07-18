@@ -259,6 +259,7 @@ export const backendOpsGroups = [
         mistake: "把 node_modules 开发依赖和 .env 打进最终镜像。",
         keyPoints: [
           "FROM node AS builder → 构建；FROM node:slim → 复制产物",
+          "基础镜像优先 node:slim(debian)；alpine 用 musl libc，Prisma/原生模块偶有兼容坑",
           ".dockerignore 排除 node_modules、.git、.env",
           "非 root USER；只暴露必要端口",
           "层缓存：先 copy package.json 再 npm i，再 copy 源码"

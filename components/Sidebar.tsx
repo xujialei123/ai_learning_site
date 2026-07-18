@@ -19,8 +19,14 @@ const groups: Array<{ title: string; links: Array<[string, string]> }> = [
       ["/frontend", "前端知识体系"],
       ["/backend", "后端知识体系"],
       ["/ai", "AI 应用知识体系"],
-      ["/ai-tools", "AI 编程工具教程"],
       ["/features", "功能到技术栈映射"]
+    ]
+  },
+  {
+    title: "AI 协作",
+    links: [
+      ["/ai-coding", "操作与指挥指南"],
+      ["/ai-tools", "AI 编程工具教程"]
     ]
   },
   {

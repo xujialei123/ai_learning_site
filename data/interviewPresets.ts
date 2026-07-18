@@ -31,7 +31,7 @@ export const presetQuestions: Omit<InterviewQuestion, "id" | "createdAt">[] = [
   },
   {
     question: "前端性能优化有哪些核心指标和优化手段？",
-    answer: "指标：1) LCP(最大内容绘制) < 2.5s；2) FID(首次输入延迟) < 100ms；3) CLS(累积布局偏移) < 0.1；4) TTFB(首字节时间) < 800ms。优化：1) 代码分割+懒加载；2) 图片优化(WebP、srcset)；3) 减少重排重绘；4) 使用 memo/useMemo/useCallback；5) Service Worker 缓存；6) CDN 加速。",
+    answer: "指标：1) LCP(最大内容绘制) < 2.5s；2) INP(下次绘制交互) < 200ms —— 2024 年 3 月起已取代旧指标 FID，衡量整个页面生命周期内所有交互的响应，比只看首次输入的 FID 更真实；3) CLS(累积布局偏移) < 0.1；4) TTFB(首字节时间) < 800ms。优化：1) 代码分割+懒加载；2) 图片优化(WebP/AVIF、srcset)；3) 减少重排重绘；4) 拆分长任务、让出主线程(降低 INP)；5) 使用 memo/useMemo/useCallback；6) Service Worker 缓存；7) CDN 加速。",
     category: "前端",
     difficulty: "高级",
     tags: ["性能优化", "Core Web Vitals"],
@@ -120,7 +120,7 @@ export const presetQuestions: Omit<InterviewQuestion, "id" | "createdAt">[] = [
   // ============ AI 应用 ============
   {
     question: "RAG 系统中如何优化检索质量？",
-    answer: "1) 切片优化：调整 chunk 大小(200-1000 Token)和重叠(15%)；2) Embedding 选择：中文用 bge-large-zh，英文用 OpenAI text-embedding-3；3) Hybrid Search：向量+关键词结合；4) Rerank：用 Cross-Encoder 重新排序；5) Query Rewrite：用户口语化问题改写；6) Metadata Filter：按 merchant_id 过滤多租户。",
+    answer: "1) 切片优化：调整 chunk 大小(200-1000 Token)和重叠(15%)；2) Embedding 选择：中文/多语种用 bge-m3、bge-large-zh-v1.5 或 Qwen3-Embedding，英文/多语种用 OpenAI text-embedding-3-large；3) Hybrid Search：向量+关键词结合；4) Rerank：用 bge-reranker-v2-m3 / Cohere Rerank 3 等 Cross-Encoder 重新排序；5) Query Rewrite：用户口语化问题改写；6) Metadata Filter：按 merchant_id 过滤多租户。",
     category: "AI应用",
     difficulty: "高级",
     tags: ["RAG", "向量检索", "Embedding"],

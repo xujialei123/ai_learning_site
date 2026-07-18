@@ -1,58 +1,46 @@
+# AI 全栈与 AI 应用学习站
 
-# AI 全栈后端与 AI 应用学习站 V6
+面向初学者的系统化学习站点：前端、后端、AI 应用工程、AI 协作编程与实战教程一站式覆盖。基于 Next.js，站内 Ask AI 助手对接 Agnes API。
 
-这是 Next.js + Agnes 的完整迁移增强版。
+## 你能学到什么
 
-## V7 新增：AI 面试题库
+- **前端 / 后端 / AI 知识体系**：知识点带速记、项目落点、常见误区、面试答法与自测
+- **服务器与部署**：Linux、DNS/HTTPS、Docker、Nginx、云发布与相关术语
+- **AI 协作**：各编程工具操作速查、指挥 AI 的指令模板与场景剧本
+- **后端实战教程**：从零搭建多租户 AI 知识库客服，按天打卡
+- **面试题库**：预设高频题 + Agnes 生成题，支持闪卡复习与导出
+- **Ask AI**：选中文字解释，或 Alt + A 打开右侧学习助手
 
-- 新增 `/interview` 页面
-- 输入方向/关键词后调用 Agnes 生成面试题
-- 自动保存到浏览器 IndexedDB
-- 支持分类、难度、标签、关键词筛选
-- 支持展开答案、删除、清空、导出 JSON
-- 新增 `/api/interview-search` 服务端接口，API Key 不暴露到前端
+## 页面导航
 
-## 改进点
+| 路径 | 说明 |
+|------|------|
+| `/` | 首页 · 学习路径 |
+| `/system` `/flows` | 系统总览、请求/数据/AI 链路 |
+| `/frontend` `/backend` `/ai` | 前端 / 后端 / AI 知识体系 |
+| `/ai-coding` | AI 编程：操作与指挥指南 |
+| `/ai-tools` | AI 编程工具介绍与选型 |
+| `/tutorial` | 后端实战教程（可打卡） |
+| `/features` | 功能到技术栈映射 |
+| `/pitfalls` | 真实项目踩坑集 |
+| `/demos` | 练习 Demo 实验室 |
+| `/tasks` | 任务制学习计划 |
+| `/interview` | AI 面试题库（含闪卡） |
+| `/glossary` | 术语库 |
+| `/resources` | 可靠链接 |
 
-相比上一版：
-
-- 恢复完整内容，不再只保留少量页面
-- 恢复系统图和 RAG 图
-- 保留后端完整知识体系
-- 保留 AI 应用完整知识体系
-- 保留功能到技术栈映射
-- 保留请求 / 数据 / AI 链路
-- 保留 Demo 实验室
-- 保留 60 天任务表
-- 保留术语库
-- Ask AI 改成右侧学习助手
-
-## Ask AI 交互
-
-支持：
-
-- 选中文字后弹出工具条
-- 解释选中内容
-- 结合项目解释
-- 给练习
-- 右侧抽屉式对话，不挡正文
-- 手动输入问题
-- 连续追问
-- 清空对话
-- Alt + A 打开助手
-- Ctrl / Cmd + Enter 发送
-
-## 安装
+## 安装与启动
 
 ```bash
 npm install
-```
-
-## 配置 Agnes
-
-```bash
 cp .env.local.example .env.local
+# 编辑 .env.local 填入 Agnes 配置
+npm run dev
 ```
+
+打开：http://localhost:3000
+
+## 配置 Agnes（Ask AI / 生成面试题）
 
 编辑 `.env.local`：
 
@@ -63,67 +51,65 @@ AGNES_MODEL=agnes-2.0-flash
 AGNES_MAX_TOKENS=900
 ```
 
-## 启动
+API Key 只在服务端使用（`/api/ask`、`/api/interview-search`），不会暴露到浏览器。
 
-```bash
-npm run dev
-```
+## Ask AI 用法
 
-打开：
+- 选中页面文字 → 弹出工具条（解释 / 结合项目 / 给练习）
+- `Alt + A` 打开右侧助手，可连续追问
+- `Ctrl / Cmd + Enter` 发送
 
-```text
-http://localhost:3000
-```
+## 面试题库说明
 
-## 目录
+打开 http://localhost:3000/interview
+
+1. 可用预设题或输入方向让 Agnes 生成
+2. 保存到浏览器 IndexedDB（本地，清站点数据会丢）
+3. 支持分类 / 难度 / 关键词筛选、闪卡复习、导出 JSON / PDF
+
+## 推荐学习顺序
+
+1. 首页路径建立全局感 → `/system`、`/flows`
+2. 打地基 → `/frontend`、`/backend`（配合 `/glossary`）
+3. AI 应用 → `/ai`
+4. 学会使唤 AI → `/ai-coding`，工具选型 → `/ai-tools`
+5. 动手做项目 → `/tutorial`（每天一步，复制步骤里的 AI 指令）
+6. 自测 → `/interview` 闪卡、`/tasks` 打卡
+
+## 目录结构
 
 ```text
 app/
-  api/ask/route.ts
-  system/page.tsx
-  backend/page.tsx
-  ai/page.tsx
-  features/page.tsx
-  flows/page.tsx
-  demos/page.tsx
-  tasks/page.tsx
-  glossary/page.tsx
-  interview/page.tsx
-  resources/page.tsx
-  api/interview-search/route.ts
+  page.tsx                 # 首页
+  backend/ ai/ frontend/   # 知识体系
+  ai-coding/               # 操作与指挥指南
+  ai-tools/                # 工具介绍
+  tutorial/                # 后端实战教程
+  interview/ pitfalls/ demos/ tasks/
+  glossary/ resources/ features/ flows/ system/
+  api/ask/                 # Ask AI
+  api/interview-search/    # 生成面试题
 
 components/
-  AskAssistant.tsx
-  Sidebar.tsx
-  Blocks.tsx
+  AskAssistant.tsx Sidebar.tsx Blocks.tsx
 
 data/
-  content.ts
+  content.ts               # 前后端 / AI 知识点
+  backendOps.ts            # 服务器与部署模块
+  backendTutorial.ts       # 实战教程步骤
+  aiCodingGuide.ts         # 指挥 AI 指南
+  aiTools.ts knowledgeMemory.ts interviewPresets.ts
+  pitfalls.ts
 
 lib/
-  agnes.ts
+  agnes.ts knowledge.ts interviewDb.ts
 
 public/diagrams/
-  system-diagram.svg
-  rag-flow.svg
+  system-diagram.svg rag-flow.svg
 ```
 
+## 技术栈
 
-## AI 面试题库说明
-
-打开：
-
-```text
-http://localhost:3000/interview
-```
-
-使用方式：
-
-1. 输入方向，例如：`Node 后端 + Redis + RAG`。
-2. 选择分类和难度。
-3. 点击“AI 生成并保存到 IndexedDB”。
-4. 页面会自动保存到浏览器本地 IndexedDB。
-5. 可以按分类、难度、关键词筛选。
-6. 可以导出 JSON。
-
-注意：IndexedDB 是浏览器本地存储，换浏览器或清除网站数据后会丢失。后续可以扩展成服务端数据库同步。
+- Next.js（App Router）+ TypeScript
+- 本地进度：localStorage / IndexedDB
+- Agnes API（对话与面试题生成）
